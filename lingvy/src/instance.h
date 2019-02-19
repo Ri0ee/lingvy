@@ -32,5 +32,4 @@ private:
 	bool ReadData(Dictionary& dictionary_);
 	bool SaveData(Dictionary& dictionary_);
 	bool ReadDictionary(const std::string& dict_path_, Dictionary& dictionary_);
-	void PrintDictionary(Dictionary& dictionary_);
 };

@@ -46,10 +46,6 @@ bool Instance::ReadDictionary(const std::string& dict_path_, Dictionary& diction
 	return true;
 }
 
-void Instance::PrintDictionary(Dictionary& dictionary_) {
-
-}
-
 bool Instance::ReadData(Dictionary& dictionary_) {
 	std::string data_path = m_program_directory + "\\dict.dat";
 
