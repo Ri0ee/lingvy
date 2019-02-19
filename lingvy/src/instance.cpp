@@ -10,7 +10,13 @@ int Instance::Run() {
 			std::cout << "Cannot open file " << m_input_file_name << "\n";
 		}
 
-	if (dictionary.WordExists("apple")) std::cout << "word apple exists in dictionary\n";
+	std::string word;
+	do {
+		std::cout << "Enter word to search: ";
+		std::cin >> word;
+		if (dictionary.WordExists(word)) 
+			std::cout << "word " << word << " exists in dictionary\n";
+	} while (word != "_");
 
 	system("PAUSE");
 	SaveData(dictionary);
@@ -39,9 +45,7 @@ bool Instance::ReadDictionary(const std::string& dict_path_, Dictionary& diction
 }
 
 void Instance::PrintDictionary(Dictionary& dictionary_) {
-	//for (auto it = dictionary_.begin(); it != dictionary_.end(); it++) {
-	//	std::cout << *it << "\n";
-	//}
+
 }
 
 bool Instance::ReadData(Dictionary& dictionary_) {
@@ -50,8 +54,8 @@ bool Instance::ReadData(Dictionary& dictionary_) {
 	std::ifstream input_file(data_path);
 	if (!input_file.is_open()) return false;
 
-	std::string word("");
-	while (input_file >> word) {
+	std::string word;
+	while (input_file >> word) {	// Read input file word by word
 		dictionary_.AddWord(word);
 	}
 	
@@ -64,10 +68,6 @@ bool Instance::SaveData(Dictionary& dictionary_) {
 
 	std::ofstream output_file(data_path);
 	if (!output_file.is_open()) return false;
-
-	//for (auto it = dictionary_.begin(); it != dictionary_.end(); it++) {
-	//	output_file << *it << " ";
-	//}
 
 	output_file.close();
 	return true;

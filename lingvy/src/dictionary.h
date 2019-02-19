@@ -6,14 +6,15 @@
 
 class Branch {
 public:
-	Branch() : m_letter(0), m_branches() {}
+	Branch() : m_letter(0), m_branches(), m_word_finisher(false) {}
 
-	Branch(Branch& branch_) : m_letter(0), m_branches() {	// Copy constructor
+	Branch(Branch& branch_) {	// Copy constructor
 		m_branches = branch_.branches();
 		m_letter = branch_.letter();
+		m_word_finisher = branch_.word_finisher();
 	}
 
-	Branch(char letter_) : m_letter(letter_), m_branches() {}
+	Branch(char letter_) : m_letter(letter_), m_branches(), m_word_finisher(false) {}
 
 	~Branch() {}
 
@@ -23,12 +24,16 @@ public:
 		return false;
 	}
 
-	char letter() {
+	char& letter() {
 		return m_letter;
 	}
 
-	list<Branch> branches() {
+	list<Branch>& branches() {
 		return m_branches;
+	}
+
+	bool& word_finisher() {
+		return m_word_finisher;
 	}
 
 	l_iterator<Branch> FindNext(char letter_) {
@@ -47,6 +52,7 @@ public:
 private:
 	list<Branch> m_branches;
 	char m_letter;
+	bool m_word_finisher;
 };
 
 class Dictionary {
@@ -59,5 +65,8 @@ public:
 	bool WordExists(const std::string& word_);
 	
 private:
+	char ToLower(char letter_);
+	std::string WordToLower(const std::string& word_);
+
 	list<Branch> m_initial_branches;
 };
