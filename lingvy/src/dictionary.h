@@ -1,0 +1,63 @@
+#pragma once
+
+#include <string>
+
+#include "listy.h"
+
+class Branch {
+public:
+	Branch() : m_letter(0), m_branches() {}
+
+	Branch(Branch& branch_) : m_letter(0), m_branches() {	// Copy constructor
+		m_branches = branch_.branches();
+		m_letter = branch_.letter();
+	}
+
+	Branch(char letter_) : m_letter(letter_), m_branches() {}
+
+	~Branch() {}
+
+	bool operator==(Branch& br1_) {
+		if (m_letter == br1_.letter()) 
+			return true;
+		return false;
+	}
+
+	char letter() {
+		return m_letter;
+	}
+
+	list<Branch> branches() {
+		return m_branches;
+	}
+
+	l_iterator<Branch> FindNext(char letter_) {
+		return m_branches.find_first(letter_);
+	}
+
+	l_iterator<Branch> AddLetter(char letter_) {
+		l_iterator<Branch> temp_iterator(m_branches.find_first(letter_));
+		if (temp_iterator == m_branches.end()) {	// Adding new letter to the tree
+			m_branches.push(letter_);
+			return m_branches.tail();
+		}
+		return temp_iterator;
+	}
+
+private:
+	list<Branch> m_branches;
+	char m_letter;
+};
+
+class Dictionary {
+public:
+	Dictionary() : m_initial_branches() {}
+
+	~Dictionary() {}
+
+	void AddWord(const std::string& word_);
+	bool WordExists(const std::string& word_);
+	
+private:
+	list<Branch> m_initial_branches;
+};
