@@ -4,6 +4,10 @@ int Instance::Run() {
 	Dictionary dictionary;
 	//ReadData(dictionary);
 
+#ifdef _DEBUG
+	m_input_file_name = m_program_directory + "\\inputfile.txt";
+#endif // _DEBUG
+
 	if (!m_input_file_name.empty())
 		if (!ReadDictionary(m_input_file_name, dictionary)) {
 			std::cout << "Cannot open file " << m_input_file_name << "\n";
