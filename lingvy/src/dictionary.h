@@ -8,7 +8,7 @@ class Branch {
 public:
 	Branch() : m_letter(0), m_branches(), m_word_finisher(false) {}
 
-	Branch(Branch& branch_) {	// Copy constructor
+	Branch(Branch& branch_) {
 		m_branches = branch_.branches();
 		m_letter = branch_.letter();
 		m_word_finisher = branch_.word_finisher();
@@ -19,8 +19,7 @@ public:
 	~Branch() {}
 
 	bool operator==(Branch& br1_) {
-		if (m_letter == br1_.letter()) 
-			return true;
+		if (m_letter == br1_.letter()) return true;
 		return false;
 	}
 
@@ -41,7 +40,7 @@ public:
 	}
 
 	l_iterator<Branch> AddLetter(char letter_) {
-		l_iterator<Branch> temp_iterator(m_branches.find_first(letter_));
+		auto temp_iterator(m_branches.find_first(letter_));
 		if (temp_iterator == m_branches.end()) {	// Adding new letter to the tree
 			m_branches.push(letter_);
 			return m_branches.tail();
@@ -63,10 +62,15 @@ public:
 
 	void AddWord(const std::string& word_);
 	bool WordExists(const std::string& word_);
-	
+
+	int WordCount() {
+		return m_word_count;
+	}
+
 private:
 	char ToLower(char letter_);
 	std::string WordToLower(const std::string& word_);
 
 	list<Branch> m_initial_branches;
+	int m_word_count = 0;
 };

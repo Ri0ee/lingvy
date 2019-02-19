@@ -2,8 +2,7 @@
 
 int Instance::Run() {
 	Dictionary dictionary;
-
-	ReadData(dictionary);
+	//ReadData(dictionary);
 
 	if (!m_input_file_name.empty())
 		if (!ReadDictionary(m_input_file_name, dictionary)) {
@@ -15,11 +14,11 @@ int Instance::Run() {
 		std::cout << "Enter word to search: ";
 		std::cin >> word;
 		if (dictionary.WordExists(word)) 
-			std::cout << "word " << word << " exists in dictionary\n";
+			std::cout << "word \"" << word << "\" exists in dictionary\n";
 	} while (word != "_");
 
 	system("PAUSE");
-	SaveData(dictionary);
+	//SaveData(dictionary);
 	return 0;
 }
 
@@ -35,10 +34,9 @@ bool Instance::ReadDictionary(const std::string& dict_path_, Dictionary& diction
 	int word_counter = 0;
 	while (input_file >> word) {
 		dictionary_.AddWord(word);
-
-		word_counter++;
-		if (word_counter % 1000 == 0) std::cout << "Words read: " << word_counter << "\n";
 	}
+
+	std::cout << "Words loaded: " << dictionary_.WordCount() << "\n";
 
 	input_file.close();
 	return true;

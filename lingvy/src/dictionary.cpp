@@ -6,33 +6,36 @@ void Dictionary::AddWord(const std::string& word_) {
 
 	std::string word = WordToLower(word_);
 	Branch initial_branch(word[0]);
-	auto temp_iterator(m_initial_branches.find_first(initial_branch));	// Search iterator
+	auto root(m_initial_branches.find_first(initial_branch));	// Search iterator
 
-	if (temp_iterator == m_initial_branches.end()) {	// Branch didn't appear in the list
+	if (root == m_initial_branches.end()) {	// Branch didn't appear in the list
 		m_initial_branches.push(initial_branch);
-		temp_iterator = m_initial_branches.tail();
+		root = m_initial_branches.tail();
 	}
 
 	for (int i = 1; i < word.size(); i++) {
-		temp_iterator = (*temp_iterator).AddLetter(word[i]);
+		root = (*root).AddLetter(word[i]);	// Add word letter by letter to the tree
 	}
-	(*temp_iterator).word_finisher() = true;
+	(*root).word_finisher() = true;	// Mark last letter as finisher for word
+
+	m_word_count++;
 }
 
 bool Dictionary::WordExists(const std::string& word_) {
 	if (word_.empty()) return false;
+
 	std::string word = WordToLower(word_);
-
 	Branch initial_branch(word[0]);
-	auto temp_iterator = m_initial_branches.find_first(initial_branch);
-	if (temp_iterator == m_initial_branches.end()) return false;
+	auto root = m_initial_branches.find_first(initial_branch);	// Search iterator
 
-	for (int i = 1; i < word.size(); i++) {
-		temp_iterator = (*temp_iterator).FindNext(word[i]);
-		if (temp_iterator == l_iterator<Branch>(nullptr)) return false;
+	if (root == m_initial_branches.end()) return false;
+
+	for (int i = 1; i < word.size(); i++) {	// Search for word letter by letter further into the tree
+		root = (*root).FindNext(word[i]);
+		if (root == l_iterator<Branch>(nullptr)) return false;
 	}
 
-	return (*temp_iterator).word_finisher();
+	return (*root).word_finisher();
 }
 
 char Dictionary::ToLower(char letter_) {
