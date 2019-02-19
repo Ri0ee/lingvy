@@ -137,7 +137,6 @@
   <ItemGroup>
     <ClInclude Include="src\dictionary.h" />
     <ClInclude Include="src\instance.h" />
-    <ClInclude Include="src\listy.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

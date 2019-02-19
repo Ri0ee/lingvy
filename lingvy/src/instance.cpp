@@ -34,13 +34,17 @@ bool Instance::ReadDictionary(const std::string& dict_path_, Dictionary& diction
 
 	std::cout << "Reading data from " << dict_path_ << "\n";
 
+	Time time_manager;
+	time_manager.StartTimeMeasure();
+
 	std::string word("");
 	int word_counter = 0;
 	while (input_file >> word) {
 		dictionary_.AddWord(word);
 	}
 
-	std::cout << "Words loaded: " << dictionary_.WordCount() << "\n";
+	time_manager.EndTimeMeasure();
+	std::cout << "Words loaded: " << dictionary_.WordCount() << "; Time taken: " << time_manager.GetTimeMeasure() << "\n";
 
 	input_file.close();
 	return true;
