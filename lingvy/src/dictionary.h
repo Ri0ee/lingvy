@@ -1,7 +1,7 @@
 #pragma once
 
 #include <string>
-#include "listy.h"
+#include "ordered_listy.h"
 
 class Branch {
 public:
@@ -17,16 +17,20 @@ public:
 
 	~Branch() {}
 
-	bool operator==(Branch& br1_) {
-		if (m_letter == br1_.letter()) return true;
+	bool operator==(Branch& branch_) {
+		if (m_letter == branch_.letter()) return true;
 		return false;
+	}
+
+	bool operator>(Branch& branch_) { // Need this for ordered_listy to function well
+		return m_letter > branch_.letter();
 	}
 	
 	char& letter() {
 		return m_letter;
 	}
 
-	list<Branch>& branches() {
+	ordered_list<Branch>& branches() {
 		return m_branches;
 	}
 
@@ -41,7 +45,7 @@ public:
 	l_iterator<Branch> AddLetter(char letter_) {
 		auto temp_iterator(m_branches.find_first(letter_));
 		if (temp_iterator == m_branches.end()) {	// Adding new letter to the tree
-			m_branches.push(letter_);
+			m_branches.add(letter_);
 			return m_branches.tail();
 		}
 		return temp_iterator;
@@ -56,7 +60,7 @@ public:
 	}
 
 private:
-	list<Branch> m_branches;
+	ordered_list<Branch> m_branches;
 	char m_letter;
 	bool m_word_finisher;
 };
@@ -86,6 +90,6 @@ private:
 	char CharToLower(char letter_);
 	std::string WordToLower(const std::string& word_);
 
-	list<Branch> m_initial_branches;
+	ordered_list<Branch> m_initial_branches;
 	int m_word_count = 0;
 };

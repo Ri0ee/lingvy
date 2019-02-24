@@ -3,8 +3,7 @@
 #include <string>
 #include <fstream>
 #include <iostream>
-#include <conio.h>
-#include "listy.h"
+#include "ordered_listy.h"
 #include "time_manager.h"
 
 #include "dictionary.h"

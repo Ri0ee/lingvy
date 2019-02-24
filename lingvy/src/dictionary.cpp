@@ -9,7 +9,7 @@ void Dictionary::AddWord(const std::string& word_) {
 	auto root(m_initial_branches.find_first(initial_branch));	// Search iterator
 
 	if (root == m_initial_branches.end()) {	// Branch didn't appear in the list
-		m_initial_branches.push(initial_branch);
+		m_initial_branches.add(initial_branch);
 		root = m_initial_branches.tail();
 	}
 

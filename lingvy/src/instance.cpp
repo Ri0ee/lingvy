@@ -15,7 +15,7 @@ int Instance::Run() {
 
 	unsigned long long unique_letter_amount = dictionary.UniqueLetterAmount();
 	int sizeof_branch = sizeof(Branch);
-	int sizeof_list_branch = sizeof(list<Branch>);
+	int sizeof_list_branch = sizeof(ordered_list<Branch>);
 	int total_sizeof = sizeof_branch + sizeof_list_branch;
 
 	std::cout << "Sizeof Branch: " << sizeof_branch << "\n";
