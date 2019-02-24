@@ -38,7 +38,6 @@ bool Instance::ReadDictionary(const std::string& dict_path_, Dictionary& diction
 	time_manager.StartTimeMeasure();
 
 	std::string word("");
-	int word_counter = 0;
 	while (input_file >> word) {
 		dictionary_.AddWord(word);
 	}

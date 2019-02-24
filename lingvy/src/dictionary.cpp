@@ -38,7 +38,7 @@ bool Dictionary::WordExists(const std::string& word_) {
 	return (*root).word_finisher();
 }
 
-char Dictionary::ToLower(char letter_) {
+char Dictionary::CharToLower(char letter_) {
 	if (letter_ <= 'Z' && letter_ >= 'A')
 		return letter_ - ('Z' - 'z');
 	return letter_;
@@ -47,7 +47,7 @@ char Dictionary::ToLower(char letter_) {
 std::string Dictionary::WordToLower(const std::string& word_) {
 	std::string temp_string(word_);
 	for (int i = 0; i < temp_string.size(); i++) {
-		temp_string[i] = ToLower(temp_string[i]);
+		temp_string[i] = CharToLower(temp_string[i]);
 	}
 	return temp_string;
 }

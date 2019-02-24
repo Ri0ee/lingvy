@@ -1,7 +1,6 @@
 #pragma once
 
 #include <string>
-
 #include "listy.h"
 
 class Branch {
@@ -22,7 +21,7 @@ public:
 		if (m_letter == br1_.letter()) return true;
 		return false;
 	}
-
+	
 	char& letter() {
 		return m_letter;
 	}
@@ -68,7 +67,7 @@ public:
 	}
 
 private:
-	char ToLower(char letter_);
+	char CharToLower(char letter_);
 	std::string WordToLower(const std::string& word_);
 
 	list<Branch> m_initial_branches;

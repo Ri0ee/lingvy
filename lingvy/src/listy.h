@@ -87,8 +87,8 @@ class list {
 public:
 	list() {}
 
-	list(list& list_) {	// Copy constructor
-		for (auto it = list_.begin(); it != list_.end(); it++)
+	list(list& list_) {
+		for (auto it = list_.begin(); it != list_.end(); it++) 
 			push(*it);
 	}
 
@@ -103,55 +103,32 @@ public:
 	void push(TL data_) {
 		if (m_head == nullptr) {
 			m_head = new l_element<TL>(data_);
-			m_tail = m_head;
-			m_size++;
 			return;
 		}
 
-		m_tail->next() = new l_element<TL>(data_);
-		m_pre_tail = m_tail;
-		m_tail = m_tail->next();
-		m_size++;
+		tail().element()->next() = new l_element<TL>(data_);
 	}
 
 	// Push data before the first element (head)
 	void push_front(TL data_) {
 		l_element<TL>* new_head = new l_element<TL>(data_, m_head);
 		m_head = new_head;
-
-		m_size++;
 	}
 
 	// Remove last element. Returns true if removed anything
 	bool pop() {
 		if (m_head == nullptr) return false;
 
-		if (m_pre_tail != nullptr) { // If we got pre-tail element due to some actions, it is faster to pop the list in such way
-			delete m_tail;
-			m_pre_tail->next() = nullptr;
-			m_tail = m_pre_tail;
+		l_iterator<TL> ptail = pre_tail();
+		if (ptail.element() == nullptr) {
+			delete m_head;
+			m_head = nullptr;
 		}
 		else {
-			l_element<TL>* tail = m_head;
-			l_element<TL>* pre_tail = nullptr;
-			while (tail->next() != nullptr) { // Search for the tail and pre-tail elements
-				pre_tail = tail;
-				tail = tail->next();
-			}
-
-			delete tail;
-			if (pre_tail != nullptr) { // If there are at least 2 elements in array
-				pre_tail->next() = nullptr;
-				m_tail = pre_tail;
-			}
-			else { // If there is only one element in array and it got deleted
-				m_head = nullptr;
-				m_tail = nullptr;
-			}
+			delete ptail.element()->next();
+			ptail.element()->next() = nullptr;
 		}
 
-		m_pre_tail = nullptr;
-		m_size--;
 		return true;
 	}
 
@@ -163,7 +140,6 @@ public:
 		delete m_head;
 		m_head = temp_element;
 
-		m_size--;
 		return true;
 	}
 
@@ -174,44 +150,26 @@ public:
 			return;
 		}
 
-		if (pos_ >= m_size) {
+		if (pos_ >= size()) {	// TODO: Change size() to something else
 			push(data_);
 			return;
 		}
 
-		int current_pos = 0;
-		l_element<TL>* current_element = m_head;
-		l_element<TL>* previous_element = nullptr;
-		while (current_element->next() != nullptr && current_pos < pos_) {
-			previous_element = current_element;
-			current_element = current_element->next();
-			current_pos++;
-		}
-
-		previous_element->next() = new l_element<TL>(data_, current_element);
-
-		m_size++;
+		l_iterator<TL> prev = seek_before(pos_);
+		prev.element()->next() = new l_element<TL>(data_, prev.element()->next());
 	}
 
 	// Removes one element from the list. Returns true if removed anything
 	bool remove(int pos_) {
-		if (m_head == nullptr || pos_ < 0 || pos_ >= m_size) return false;
+		if (m_head == nullptr || pos_ < 0 || pos_ >= size()) return false; // TODO: Change size() to something else
 		if (pos_ == 0) return pop_front();
-		if (pos_ == m_size - 1) return pop();
+		if (pos_ == size() - 1) return pop(); // TODO: Change size() to something else
 
-		int current_pos = 0;
-		l_element<TL>* current_element = m_head;
-		l_element<TL>* previous_element = nullptr;
-		while (current_element->next() != nullptr && current_pos < pos_) { // Iterate to the needed element
-			previous_element = current_element;
-			current_element = current_element->next();
-			current_pos++;
-		}
+		l_iterator<TL> prev = seek_before(pos_);
+		l_iterator<TL> after(prev.element()->next()->next());
+		delete prev.element()->next();
+		prev.element()->next() = after.element();
 
-		previous_element->next() = current_element->next();
-		delete current_element;
-
-		m_size--;
 		return true;
 	}
 
@@ -239,18 +197,13 @@ public:
 		return temp_iterator;
 	}
 
-	// Provides one element from the list
-	TL& operator[] (int index_) {
-		l_element<TL>* current_element = m_head;
-		for (int index = 0; index < index_; index++) 
-			current_element = current_element->next();
-
-		return current_element->get_data();
-	}
-
 	// Returns amount of elements in list
-	int size() {
-		return m_size;
+	unsigned int size() {
+		unsigned int temp_size = 0;
+		for (auto it = begin(); it != end(); it++) {
+			temp_size++;
+		}
+		return temp_size;
 	}
 
 	// Returns iterator of the first element of the list
@@ -263,16 +216,6 @@ public:
 		return l_iterator<TL>(nullptr);
 	}
 
-	// Returns iterator of the last element of the list
-	l_iterator<TL> tail() {
-		return l_iterator<TL>(m_tail);
-	}
-
-	// Returns iterator of the element which stays before the tail
-	l_iterator<TL> pre_tail() {
-		return l_iterator<TL>(m_pre_tail);
-	}
-
 	// Returns distance between two iterators (amount of elements between them)
 	int distance(l_iterator<TL> begin_iterator_, l_iterator<TL> dest_iterator_) {
 		int counter = 0;
@@ -283,10 +226,49 @@ public:
 
 		return -1;
 	}
+	
+	// Returns iterator to the last element of the list
+	l_iterator<TL> tail() {
+		for (auto it = begin(); it != end(); it++) {
+			if (it.element()->next() == nullptr) {
+				return it;
+			}
+		}
+		return l_iterator<TL>(nullptr);
+	}
+
+	// Returns iterator to the element that stays before last element
+	l_iterator<TL> pre_tail() {
+		for (auto it = begin(); it != end(); it++) {
+			if (it.element()->next() != nullptr) {
+				if (it.element()->next()->next() == nullptr) {
+					return it;
+				}
+			}
+			else break;
+		}
+		return l_iterator<TL>(nullptr);
+	}
+
+	l_iterator<TL> seek(unsigned int position_) {
+		unsigned int current_position = 0;
+		for (auto it = begin(); it != end() && current_position <= position_; it++) {
+			if (current_position == position_) {
+				return it;
+			}
+			current_position++;
+		}
+		return l_iterator<TL>(nullptr);
+	}
+
+	l_iterator<TL> seek_before(unsigned int position_) {
+		return seek(position_ - 1);
+	}
+
+	l_iterator<TL> seek_after(unsigned int position_) {
+		return seek(position_ + 1);
+	}
 
 private:
-	l_element<TL>* m_head = nullptr;
-	l_element<TL>* m_tail = nullptr;
-	l_element<TL>* m_pre_tail = nullptr;
-	int m_size = 0;
+	l_element<TL>* m_head = nullptr; 
 };
