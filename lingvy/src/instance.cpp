@@ -14,16 +14,15 @@ int Instance::Run() {
 		}
 
 	unsigned long long unique_letter_amount = dictionary.UniqueLetterAmount();
-	int total_sizeof = sizeof(Branch) + sizeof(list<Branch>);
+	int sizeof_branch = sizeof(Branch);
+	int sizeof_list_branch = sizeof(list<Branch>);
+	int total_sizeof = sizeof_branch + sizeof_list_branch;
 
-	std::cout << "Sizeof Branch: " << sizeof(Branch) << "\n";
-	std::cout << "Sizeof list<Branch>: " << sizeof(list<Branch>) << "\n";
+	std::cout << "Sizeof Branch: " << sizeof_branch << "\n";
+	std::cout << "Sizeof list<Branch>: " << sizeof_list_branch << "\n";
 	std::cout << "Total sizeof: " << total_sizeof << "\n";
 	std::cout << "Amount of letters added: " << unique_letter_amount << "\n";
-
-	std::cout << "Size of dictionary (bytes): " << unique_letter_amount * total_sizeof << "\n";
-	std::cout << "Size of dictionary (kb): " << unique_letter_amount * total_sizeof / 1024 << "\n";
-	std::cout << "Size of dictionary (mb): " << unique_letter_amount * total_sizeof / 1024 / 1024 << "\n";
+	std::cout << "Size of dictionary (mb): " <<	unique_letter_amount * total_sizeof / 1024 / 1024 << "\n";
 
 	std::string word;
 	do {
