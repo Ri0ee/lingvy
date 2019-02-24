@@ -13,6 +13,18 @@ int Instance::Run() {
 			std::cout << "Cannot open file " << m_input_file_name << "\n";
 		}
 
+	unsigned long long unique_letter_amount = dictionary.UniqueLetterAmount();
+	int total_sizeof = sizeof(Branch) + sizeof(list<Branch>);
+
+	std::cout << "Sizeof Branch: " << sizeof(Branch) << "\n";
+	std::cout << "Sizeof list<Branch>: " << sizeof(list<Branch>) << "\n";
+	std::cout << "Total sizeof: " << total_sizeof << "\n";
+	std::cout << "Amount of letters added: " << unique_letter_amount << "\n";
+
+	std::cout << "Size of dictionary (bytes): " << unique_letter_amount * total_sizeof << "\n";
+	std::cout << "Size of dictionary (kb): " << unique_letter_amount * total_sizeof / 1024 << "\n";
+	std::cout << "Size of dictionary (mb): " << unique_letter_amount * total_sizeof / 1024 / 1024 << "\n";
+
 	std::string word;
 	do {
 		std::cout << "Enter word to search: ";

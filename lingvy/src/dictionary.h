@@ -47,6 +47,14 @@ public:
 		return temp_iterator;
 	}
 
+	unsigned long long size() {
+		unsigned long long temp_size = 1;
+		for (auto it = m_branches.begin(); it != m_branches.end(); it++) {
+			temp_size += (*it).size();
+		}
+		return temp_size;
+	}
+
 private:
 	list<Branch> m_branches;
 	char m_letter;
@@ -61,6 +69,14 @@ public:
 
 	void AddWord(const std::string& word_);
 	bool WordExists(const std::string& word_);
+
+	unsigned long long UniqueLetterAmount() {
+		unsigned long long temp_letter_counter = 0;
+		for (auto it = m_initial_branches.begin(); it != m_initial_branches.end(); it++) {
+			temp_letter_counter += (*it).size();
+		}
+		return temp_letter_counter;
+	}
 
 	int WordCount() {
 		return m_word_count;
