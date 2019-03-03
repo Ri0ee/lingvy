@@ -8,14 +8,12 @@ void Dictionary::AddWord(const std::string& word_) {
 	Branch initial_branch(word[0]);
 	auto root(m_initial_branches.find_first(initial_branch));	// Search iterator
 
-	if (root == m_initial_branches.end()) {	// Branch didn't appear in the list
-		m_initial_branches.add(initial_branch);
-		root = m_initial_branches.tail();
-	}
+	if (root == m_initial_branches.end()) // Branch didn't appear in the list
+		root = m_initial_branches.add(initial_branch);
 
-	for (int i = 1; i < word.size(); i++) {
+	for (int i = 1; i < word.size(); i++)
 		root = (*root).AddLetter(word[i]);	// Add word letter by letter to the tree
-	}
+
 	(*root).word_finisher() = true;	// Mark last letter as finisher for word
 
 	m_word_count++;
