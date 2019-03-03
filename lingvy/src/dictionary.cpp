@@ -1,18 +1,17 @@
 #include "dictionary.h"
 
 void Dictionary::AddWord(const std::string& word_) {
-	if (word_.empty()) return;
-	if (WordExists(word_)) return;
+	if (word_.empty() || WordExists(word_)) return;
 
 	std::string word = WordToLower(word_);
 	Branch initial_branch(word[0]);
-	auto root(m_initial_branches.find_first(initial_branch));	// Search iterator
+	auto root(m_initial_branches.find_first(initial_branch)); // Find initial letter of the word in dictionary
 
 	if (root == m_initial_branches.end()) // Branch didn't appear in the list
 		root = m_initial_branches.add(initial_branch);
 
 	for (int i = 1; i < word.size(); i++)
-		root = (*root).AddLetter(word[i]);	// Add word letter by letter to the tree
+		root = (*root).AddLetter(word[i]); // Add word letter by letter to the tree
 
 	(*root).word_finisher() = true;	// Mark last letter as finisher for word
 
@@ -24,7 +23,7 @@ bool Dictionary::WordExists(const std::string& word_) {
 
 	std::string word = WordToLower(word_);
 	Branch initial_branch(word[0]);
-	auto root = m_initial_branches.find_first(initial_branch);	// Search iterator
+	auto root = m_initial_branches.find_first(initial_branch); // Find initial letter of the word in dictionary
 
 	if (root == m_initial_branches.end()) return false;
 
@@ -44,9 +43,8 @@ char Dictionary::CharToLower(char letter_) {
 
 std::string Dictionary::WordToLower(const std::string& word_) {
 	std::string temp_string(word_);
-	for (int i = 0; i < temp_string.size(); i++) {
+	for (int i = 0; i < temp_string.size(); i++)
 		temp_string[i] = CharToLower(temp_string[i]);
-	}
 	return temp_string;
 }
 
@@ -57,7 +55,7 @@ bool Dictionary::SaveToFile(const std::string& file_name_) {
 	if (!m_output_file.is_open()) return false;
 
 	for (auto it = m_initial_branches.begin(); it != m_initial_branches.end(); it++) {
-		m_current_word_stack = "";
+		m_current_word_stack.clear();
 		RecursiveSaving(it);
 	}
 
@@ -67,13 +65,12 @@ bool Dictionary::SaveToFile(const std::string& file_name_) {
 
 void Dictionary::RecursiveSaving(l_iterator<Branch> root_) {
 	m_current_word_stack += (*root_).letter();
-	if ((*root_).word_finisher()) {
-		m_output_file << m_current_word_stack << "\n";
-	}
 
-	for (auto it = (*root_).branches().begin(); it != (*root_).branches().end(); it++) {
+	if ((*root_).word_finisher())
+		m_output_file << m_current_word_stack << "\n";
+
+	for (auto it = (*root_).branches().begin(); it != (*root_).branches().end(); it++)
 		RecursiveSaving(it);
-	}
 
 	m_current_word_stack.erase(m_current_word_stack.end() - 1);
 }
@@ -83,6 +80,10 @@ bool Dictionary::LoadFromFile(const std::string& file_name_) {
 
 	std::fstream input_file(file_name_, std::ios::in);
 	if (!input_file.is_open()) return false;
+
+	std::string word;
+	while (input_file >> word)
+		AddWord(word);
 
 	input_file.close();
 	return true;

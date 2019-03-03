@@ -9,9 +9,8 @@ int Instance::Run() {
 #endif // _DEBUG
 
 	if (!m_input_file_name.empty())
-		if (!ReadDictionary(m_input_file_name, dictionary)) {
+		if (!ReadDictionary(m_input_file_name, dictionary))
 			std::cout << "Cannot open file " << m_input_file_name << "\n";
-		}
 
 	//unsigned long long unique_letter_amount = dictionary.UniqueLetterAmount();
 	//int sizeof_branch = sizeof(Branch);
@@ -32,9 +31,8 @@ int Instance::Run() {
 			std::cout << "word \"" << word << "\" exists in dictionary\n";
 	} while (word != "_");
 
-	if (!SaveData(dictionary)) {
+	if (!SaveData(dictionary))
 		std::cout << "Failed to save data\n";
-	}
 
 	system("PAUSE");
 	return 0;
@@ -43,24 +41,17 @@ int Instance::Run() {
 bool Instance::ReadDictionary(const std::string& dict_path_, Dictionary& dictionary_) {
 	if (dict_path_.empty()) return false;
 
-	std::ifstream input_file(dict_path_);
-	if (!input_file.is_open()) return false;
-
 	std::cout << "Reading data from " << dict_path_ << "\n";
 
 	Time time_manager;
 	time_manager.StartTimeMeasure();
 
-	std::string word("");
-	while (input_file >> word) {
-		dictionary_.AddWord(word);
-	}
+	bool ret = dictionary_.LoadFromFile(dict_path_);
 
 	time_manager.EndTimeMeasure();
 	std::cout << "Reading dictionary data took " << time_manager.GetTimeMeasure() << " seconds; " << dictionary_.WordCount() << " words loaded\n";
-
-	input_file.close();
-	return true;
+	
+	return ret;
 }
 
 bool Instance::ReadData(Dictionary& dictionary_) {
@@ -76,9 +67,10 @@ bool Instance::SaveData(Dictionary& dictionary_) {
 
 	Time time_manager;
 	time_manager.StartTimeMeasure();
-	bool ret = dictionary_.SaveToFile(data_path);
-	time_manager.EndTimeMeasure();
 
+	bool ret = dictionary_.SaveToFile(data_path);
+
+	time_manager.EndTimeMeasure();
 	std::cout << "Saving dictionary data took " << time_manager.GetTimeMeasure() << " seconds\n";
 
 	return ret;
