@@ -2,7 +2,7 @@
 
 int Instance::Run() {
 	Dictionary dictionary;
-	//ReadData(dictionary);
+	ReadData(dictionary);
 
 #ifdef _DEBUG
 	m_input_file_name = m_program_directory + "\\inputfile.txt";
@@ -13,26 +13,24 @@ int Instance::Run() {
 			std::cout << "Cannot open file " << m_input_file_name << "\n";
 		}
 
-	/*
-	unsigned long long unique_letter_amount = dictionary.UniqueLetterAmount();
-	int sizeof_branch = sizeof(Branch);
-	int sizeof_list_branch = sizeof(ordered_list<Branch>);
-	int total_sizeof = sizeof_branch + sizeof_list_branch;
+	//unsigned long long unique_letter_amount = dictionary.UniqueLetterAmount();
+	//int sizeof_branch = sizeof(Branch);
+	//int sizeof_list_branch = sizeof(ordered_list<Branch>);
+	//int total_sizeof = sizeof_branch + sizeof_list_branch;
 
-	std::cout << "Sizeof Branch: " << sizeof_branch << "\n";
-	std::cout << "Sizeof list<Branch>: " << sizeof_list_branch << "\n";
-	std::cout << "Total sizeof: " << total_sizeof << "\n";
-	std::cout << "Amount of letters added: " << unique_letter_amount << "\n";
-	std::cout << "Size of dictionary (mb): " <<	unique_letter_amount * total_sizeof / 1024 / 1024 << "\n";
-	*/
+	//std::cout << "Sizeof Branch: " << sizeof_branch << "\n";
+	//std::cout << "Sizeof list<Branch>: " << sizeof_list_branch << "\n";
+	//std::cout << "Total sizeof: " << total_sizeof << "\n";
+	//std::cout << "Amount of letters added: " << unique_letter_amount << "\n";
+	//std::cout << "Size of dictionary (mb): " <<	unique_letter_amount * total_sizeof / 1024 / 1024 << "\n";
 
-	//std::string word;
-	//do {
-	//	std::cout << "Enter word to search: ";
-	//	std::cin >> word;
-	//	if (dictionary.WordExists(word)) 
-	//		std::cout << "word \"" << word << "\" exists in dictionary\n";
-	//} while (word != "_");
+	std::string word;
+	do {
+		std::cout << "Enter word to search: ";
+		std::cin >> word;
+		if (dictionary.WordExists(word)) 
+			std::cout << "word \"" << word << "\" exists in dictionary\n";
+	} while (word != "_");
 
 	if (!SaveData(dictionary)) {
 		std::cout << "Failed to save data\n";
@@ -59,7 +57,7 @@ bool Instance::ReadDictionary(const std::string& dict_path_, Dictionary& diction
 	}
 
 	time_manager.EndTimeMeasure();
-	std::cout << "Words loaded: " << dictionary_.WordCount() << "; Time taken: " << time_manager.GetTimeMeasure() << "\n";
+	std::cout << "Reading dictionary data took " << time_manager.GetTimeMeasure() << " seconds; " << dictionary_.WordCount() << " words loaded\n";
 
 	input_file.close();
 	return true;
@@ -67,17 +65,8 @@ bool Instance::ReadDictionary(const std::string& dict_path_, Dictionary& diction
 
 bool Instance::ReadData(Dictionary& dictionary_) {
 	std::string data_path = m_program_directory + "\\dict.dat";
-
-	std::ifstream input_file(data_path);
-	if (!input_file.is_open()) return false;
-
-	std::string word;
-	while (input_file >> word) {	// Read input file word by word
-		dictionary_.AddWord(word);
-	}
 	
-	input_file.close();
-	return true;
+	return ReadDictionary(data_path, dictionary_);
 }
 
 bool Instance::SaveData(Dictionary& dictionary_) {
