@@ -100,22 +100,19 @@ public:
 	}
 
 	// Adds data in sorted way. Needs TL type to have ">" operator implemented
-	void add(TL data_) {
-		if (m_head == nullptr) { // If the list is currently empty
-			push_front(data_);
-			return;
-		}
+	l_iterator<TL> add(TL data_) {
+		if (m_head == nullptr) // If the list is currently empty
+			return push_front(data_);
 
 		unsigned int current_pos = 0;
 		for (auto it = begin(); it != end(); it++) {
-			if (*it > data_) { // This requires TL type to have comparsion operator 
-				insert(current_pos, data_);
-				return;
-			}
+			if (*it > data_) // This requires TL type to have comparsion operator 
+				return insert(current_pos, data_);
+				
 			current_pos++;
 		}
 
-		push(data_); // If we didn't find elements that have bigger value than ours does
+		return push(data_); // If we didn't find elements that have bigger value than ours does
 	}
 
 	// Remove last element. Returns true if removed anything
@@ -281,29 +278,32 @@ private:
 	}
 
 	// Push data to the end of the list
-	void push(TL data_) {
-		if (m_head == nullptr) {
-			m_head = new l_element<TL>(data_);
-			return;
-		}
+	l_iterator<TL> push(TL data_) {
+		if (m_head == nullptr)
+			return push_front(data_);
 
-		tail().element()->next() = new l_element<TL>(data_);
+		l_element<TL>* temp_element = new l_element<TL>(data_);
+		tail().element()->next() = temp_element;
+		
+		return l_iterator<TL>(temp_element);
 	}
 
 	// Push data before the first element (head)
-	void push_front(TL data_) {
+	l_iterator<TL> push_front(TL data_) {
 		l_element<TL>* new_head = new l_element<TL>(data_, m_head);
 		m_head = new_head;
+		
+		return l_iterator<TL>(m_head);
 	}
 
 	// Inserts one element into the list
-	void insert(unsigned int pos_, TL data_) {
-		if (m_head == nullptr || pos_ <= 0) {
-			push_front(data_);
-			return;
-		}
+	l_iterator<TL> insert(unsigned int pos_, TL data_) {
+		if (m_head == nullptr || pos_ <= 0)
+			return push_front(data_);
 
 		l_iterator<TL> prev = seek_before(pos_);
 		prev.element()->next() = new l_element<TL>(data_, prev.element()->next());
+		
+		return l_iterator<TL>(prev.element()->next());
 	}
 };

@@ -51,3 +51,67 @@ std::string Dictionary::WordToLower(const std::string& word_) {
 	}
 	return temp_string;
 }
+
+bool Dictionary::SaveToFile(const std::string& file_name_) {
+	if (file_name_.empty()) return false;
+
+	m_output_file = std::fstream(file_name_, std::ios::out);
+	if (!m_output_file.is_open()) return false;
+
+	for (auto it = m_initial_branches.begin(); it != m_initial_branches.end(); it++) {
+		m_current_word_stack = "";
+		RecursiveSaving(it);
+	}
+
+	m_output_file.close();
+	return true;
+}
+
+void Dictionary::RecursiveSaving(l_iterator<Branch> root_) {
+	m_current_word_stack += (*root_).letter();
+	if ((*root_).word_finisher()) {
+		m_output_file << m_current_word_stack << "\n";
+	}
+
+	for (auto it = (*root_).branches().begin(); it != (*root_).branches().end(); it++) {
+		RecursiveSaving(it);
+	}
+
+	m_current_word_stack.erase(m_current_word_stack.end() - 1);
+}
+
+bool Dictionary::LoadFromFile(const std::string& file_name_) {
+	if (file_name_.empty()) return false;
+
+	std::fstream input_file(file_name_, std::ios::in);
+	if (!input_file.is_open()) return false;
+
+	input_file.close();
+	return true;
+}
+
+bool Dictionary::GetNextWord(std::string& word_) {
+	if (m_initial_branches.size() == 0) return false; // Return false if there are no words in dictionary
+
+	if (m_current_word_stack.empty()) { // Starting word iterating from beginning
+		m_current_word_stack = (*m_initial_branches.begin()).letter();
+	}
+
+	l_iterator<Branch> temp_iterator(m_initial_branches.find_first(m_current_word_stack[0]));
+	for (unsigned depth = 1; depth < m_current_word_stack.size(); depth++) {
+		temp_iterator = (*temp_iterator).FindNext(m_current_word_stack[depth]);
+	}
+
+	while(true) {
+		temp_iterator = (*temp_iterator).branches().begin();
+		if (temp_iterator == l_iterator<Branch>(nullptr)) return false;
+		m_current_word_stack += (*temp_iterator).letter();
+
+		if ((*temp_iterator).word_finisher() == true) {
+			break;
+		}
+	}
+
+	word_ = m_current_word_stack;
+	return true;
+}

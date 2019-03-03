@@ -1,6 +1,7 @@
 #pragma once
 
 #include <string>
+#include <fstream>
 #include "ordered_listy.h"
 
 class Branch {
@@ -44,9 +45,8 @@ public:
 
 	l_iterator<Branch> AddLetter(char letter_) {
 		auto temp_iterator(m_branches.find_first(letter_));
-		if (temp_iterator == m_branches.end()) {	// Adding new letter to the tree
-			m_branches.add(letter_);
-			return m_branches.tail();
+		if (temp_iterator == m_branches.end()) { // Adding new letter to the tree
+			return m_branches.add(letter_);
 		}
 		return temp_iterator;
 	}
@@ -67,12 +67,19 @@ private:
 
 class Dictionary {
 public:
-	Dictionary() : m_initial_branches() {}
+	Dictionary() : m_initial_branches(), m_last_letter_branch(), m_current_word_stack() {}
 
 	~Dictionary() {}
 
 	void AddWord(const std::string& word_);
 	bool WordExists(const std::string& word_);
+	bool SaveToFile(const std::string& file_name_);
+	bool LoadFromFile(const std::string& file_name_);
+	bool GetNextWord(std::string& word_);
+
+	void ResetWordPos() {
+		m_last_letter_branch = l_iterator<Branch>(nullptr);
+	}
 
 	unsigned long long UniqueLetterAmount() {
 		unsigned long long temp_letter_counter = 0;
@@ -89,7 +96,12 @@ public:
 private:
 	char CharToLower(char letter_);
 	std::string WordToLower(const std::string& word_);
+	void RecursiveSaving(l_iterator<Branch> root_);
 
-	ordered_list<Branch> m_initial_branches;
-	int m_word_count = 0;
+	ordered_list<Branch> m_initial_branches; // list of first word letters
+	int m_word_count = 0; // Total count of words in dictionary
+
+	l_iterator<Branch> m_last_letter_branch; // Need this for GetNextWord()
+	std::string m_current_word_stack;
+	std::fstream m_output_file;
 };
