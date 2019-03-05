@@ -163,9 +163,8 @@ public:
 
 	// Searches for the first appearance of data in list
 	l_iterator<TL> find_first(TL data_) {
-		for (auto it = begin(); it != end(); it++) {
+		for (auto it = begin(); it != end(); it++)
 			if (*it == data_) return l_iterator<TL>(it);
-		}
 
 		return end();
 	}
@@ -173,9 +172,8 @@ public:
 	// Searches for the last appearance of data in list
 	l_iterator<TL> find_last(TL data_) {
 		l_iterator<TL> temp_iterator = end();
-		for (auto it = begin(); it != end(); it++) {
+		for (auto it = begin(); it != end(); it++)
 			if (*it == data_) temp_iterator = it;
-		}
 
 		return temp_iterator;
 	}
@@ -183,31 +181,27 @@ public:
 	// Searches for the element with minimal value
 	l_iterator<TL> find_min(l_iterator<TL> begin_ = begin(), l_iterator<TL> end_ = end()) {
 		l_iterator<TL> current_min(begin_);
-		for (auto it = begin_; it != end_; it++) {
-			if (*current_min > *it) {
-				current_min = it;
-			}
-		}
+		for (auto it = begin_; it != end_; it++)
+			if (*current_min > *it) current_min = it;
+		
 		return current_min;
 	}
 
 	// Searches for the element with highest value
 	l_iterator<TL> find_max(l_iterator<TL> begin_ = begin(), l_iterator<TL> end_ = end()) {
 		l_iterator<TL> current_max(begin_);
-		for (auto it = begin_; it != end_; it++) {
-			if (*current_max < *it) {
-				current_max = it;
-			}
-		}
+		for (auto it = begin_; it != end_; it++)
+			if (*current_max < *it) current_max = it;
+		
 		return current_max;
 	}
 
 	// Returns amount of elements in list
 	unsigned int size() {
 		unsigned int temp_size = 0;
-		for (auto it = begin(); it != end(); it++) {
+		for (auto it = begin(); it != end(); it++)
 			temp_size++;
-		}
+		
 		return temp_size;
 	}
 
@@ -223,24 +217,21 @@ public:
 
 	// Returns iterator to the last element of the list
 	l_iterator<TL> tail() {
-		for (auto it = begin(); it != end(); it++) {
-			if (it.element()->next() == nullptr) {
-				return it;
-			}
-		}
+		for (auto it = begin(); it != end(); it++)
+			if (it.element()->next() == nullptr) return it;
+		
 		return l_iterator<TL>(nullptr);
 	}
 
 	// Returns iterator to the element that stays before last element
 	l_iterator<TL> pre_tail() {
-		for (auto it = begin(); it != end(); it++) {
+		for (auto it = begin(); it != end(); it++)
 			if (it.element()->next() != nullptr) {
-				if (it.element()->next()->next() == nullptr) {
+				if (it.element()->next()->next() == nullptr)
 					return it;
-				}
 			}
 			else break;
-		}
+			
 		return l_iterator<TL>(nullptr);
 	}
 
@@ -249,6 +240,7 @@ public:
 		int counter = 0;
 		for (auto it = begin_iterator_; it != end(); it++) {
 			if (it == dest_iterator_) return counter;
+			
 			counter++;
 		}
 
@@ -261,9 +253,8 @@ private:
 	l_iterator<TL> seek(unsigned int position_) {
 		unsigned int current_position = 0;
 		for (auto it = begin(); it != end() && current_position <= position_; it++) {
-			if (current_position == position_) {
+			if (current_position == position_)
 				return it;
-			}
 			current_position++;
 		}
 		return l_iterator<TL>(nullptr);
