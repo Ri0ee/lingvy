@@ -61,6 +61,11 @@ public:
 		bool operator!=(const l_iterator& iterator_) {
 			return iterator_.element() != m_element_ptr;
 		}
+		
+		bool operator=(const l_iterator& iterator_) {
+			m_element_ptr = iterator_.element();
+			return true;
+		}
 
 		l_element* element() const {
 			return m_element_ptr;

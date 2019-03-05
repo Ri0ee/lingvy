@@ -65,6 +65,11 @@ public:
 		l_element* element() const {
 			return m_element_ptr;
 		}
+		
+		bool operator=(const l_iterator& iterator_) {
+			m_element_ptr = iterator_.element();
+			return true;
+		}
 
 		void swap_data(l_iterator& iterator_) {
 			TL temp_data = iterator_.element()->get_data();
