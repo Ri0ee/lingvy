@@ -29,7 +29,7 @@ bool Dictionary::WordExists(const std::string& word_) {
 
 	for (int i = 1; i < word.size(); i++) {	// Search for word letter by letter further into the tree
 		root = (*root).FindNext(word[i]);
-		if (root == l_iterator<Branch>(nullptr)) return false;
+		if (root == ordered_list<Branch>::l_iterator(nullptr)) return false;
 	}
 
 	return (*root).word_finisher();
@@ -51,7 +51,7 @@ std::string Dictionary::WordToLower(const std::string& word_) {
 bool Dictionary::SaveToFile(const std::string& file_name_) {
 	if (file_name_.empty()) return false;
 
-	m_output_file = std::fstream(file_name_, std::ios::out);
+	m_output_file = std::fstream(file_name_, std::ios::out | std::ios::binary);
 	if (!m_output_file.is_open()) return false;
 
 	for (auto it = m_initial_branches.begin(); it != m_initial_branches.end(); it++) {
@@ -63,7 +63,7 @@ bool Dictionary::SaveToFile(const std::string& file_name_) {
 	return true;
 }
 
-void Dictionary::RecursiveSaving(l_iterator<Branch> root_) {
+void Dictionary::RecursiveSaving(ordered_list<Branch>::l_iterator root_) {
 	m_current_word_stack += (*root_).letter();
 
 	if ((*root_).word_finisher())
@@ -89,28 +89,80 @@ bool Dictionary::LoadFromFile(const std::string& file_name_) {
 	return true;
 }
 
+bool Dictionary::GetFirstWord(std::string& word_) {
+	if (m_initial_branches.empty()) return false;
+
+	m_current_word_stack.clear();
+	m_iteration_stack.clear();
+	m_iteration_stack.push_back(m_initial_branches.begin());
+
+	// Converts list iterator to ordered_list iterator
+	//auto temp_iterator = ordered_list<Branch>::l_iterator(reinterpret_cast<ordered_list<Branch>::l_element*>(m_iteration_stack.tail().element()));
+	
+	auto root = *m_iteration_stack.begin();
+
+	while (root != ordered_list<Branch>::l_iterator(nullptr)) {
+		m_current_word_stack += (*root).letter();
+		m_iteration_stack.push_back(root);
+
+		if ((*root).word_finisher()) {
+			word_ = m_current_word_stack;
+			return true;
+		}
+
+		root = (*root).branches().begin();
+	}
+
+	throw std::runtime_error("Didn't find word finisher for some reason, should've");
+	return false; 
+}
+
 bool Dictionary::GetNextWord(std::string& word_) {
-	if (m_initial_branches.size() == 0) return false; // Return false if there are no words in dictionary
+	if (m_initial_branches.empty()) return false; // Return false if there are no words in dictionary
+	if (m_iteration_stack.empty()) return false;
 
-	if (m_current_word_stack.empty()) { // Starting word iterating from beginning
-		m_current_word_stack = (*m_initial_branches.begin()).letter();
-	}
+	auto root = *m_iteration_stack.tail();
+	auto root2 = (*root).branches().begin();
 
-	l_iterator<Branch> temp_iterator(m_initial_branches.find_first(m_current_word_stack[0]));
-	for (unsigned depth = 1; depth < m_current_word_stack.size(); depth++) {
-		temp_iterator = (*temp_iterator).FindNext(m_current_word_stack[depth]);
-	}
+	while (true) {
+		if (root2 == ordered_list<Branch>::l_iterator(nullptr)) { // This is the end of tree branch
+			m_iteration_stack.pop(); // Remove last branch from the stack
+			if (m_iteration_stack.empty()) {
+				return false;
+			}
+			root = *m_iteration_stack.tail();
 
-	while(true) {
-		temp_iterator = (*temp_iterator).branches().begin();
-		if (temp_iterator == l_iterator<Branch>(nullptr)) return false;
-		m_current_word_stack += (*temp_iterator).letter();
+			// Set root2 the value of unvisited from root branch 
+			root2 = (*root).branches().find_first(m_current_word_stack[m_current_word_stack.size() - 1]);
+			m_current_word_stack.pop_back();
 
-		if ((*temp_iterator).word_finisher() == true) {
-			break;
+			if (m_current_word_stack.empty() && root2 == ordered_list<Branch>::l_iterator(nullptr)) {
+				root++;
+				if (root == ordered_list<Branch>::l_iterator(nullptr)) {
+					return false;
+				}
+				m_current_word_stack += (*root).letter();
+
+				m_iteration_stack.clear();
+				m_iteration_stack.push_back(root);
+				root2 = (*root).branches().begin();
+			}
+			else
+				root2++;
+		}
+		else {
+			m_current_word_stack += (*root2).letter();
+			m_iteration_stack.push_back(root2);
+
+			if ((*root2).word_finisher()) {
+				word_ = m_current_word_stack;
+				return true;
+			}
+
+			root2 = (*root2).branches().begin();
 		}
 	}
 
-	word_ = m_current_word_stack;
-	return true;
+	// Should never get here
+	return false;
 }

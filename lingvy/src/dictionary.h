@@ -3,6 +3,7 @@
 #include <string>
 #include <fstream>
 #include "ordered_listy.h"
+#include "listy.h"
 
 class Branch {
 public:
@@ -39,23 +40,21 @@ public:
 		return m_word_finisher;
 	}
 
-	l_iterator<Branch> FindNext(char letter_) {
+	ordered_list<Branch>::l_iterator FindNext(char letter_) {
 		return m_branches.find_first(letter_);
 	}
 
-	l_iterator<Branch> AddLetter(char letter_) {
+	ordered_list<Branch>::l_iterator AddLetter(char letter_) {
 		auto temp_iterator(m_branches.find_first(letter_));
-		if (temp_iterator == m_branches.end()) { // Adding new letter to the tree
+		if (temp_iterator == m_branches.end()) // Adding new letter to the tree
 			return m_branches.add(letter_);
-		}
 		return temp_iterator;
 	}
 
 	unsigned long long size() {
 		unsigned long long temp_size = 1;
-		for (auto it = m_branches.begin(); it != m_branches.end(); it++) {
+		for (auto it = m_branches.begin(); it != m_branches.end(); it++)
 			temp_size += (*it).size();
-		}
 		return temp_size;
 	}
 
@@ -67,7 +66,7 @@ private:
 
 class Dictionary {
 public:
-	Dictionary() : m_initial_branches(), m_last_letter_branch(), m_current_word_stack() {}
+	Dictionary() : m_initial_branches(), m_current_word_stack() {}
 
 	~Dictionary() {}
 
@@ -75,11 +74,8 @@ public:
 	bool WordExists(const std::string& word_);
 	bool SaveToFile(const std::string& file_name_);
 	bool LoadFromFile(const std::string& file_name_);
+	bool GetFirstWord(std::string& word_);
 	bool GetNextWord(std::string& word_);
-
-	void ResetWordPos() {
-		m_last_letter_branch = l_iterator<Branch>(nullptr);
-	}
 
 	unsigned long long UniqueLetterAmount() {
 		unsigned long long temp_letter_counter = 0;
@@ -96,12 +92,14 @@ public:
 private:
 	char CharToLower(char letter_);
 	std::string WordToLower(const std::string& word_);
-	void RecursiveSaving(l_iterator<Branch> root_);
+	void RecursiveSaving(ordered_list<Branch>::l_iterator root_);
 
 	ordered_list<Branch> m_initial_branches; // list of first word letters
 	int m_word_count = 0; // Total count of words in dictionary
 
-	l_iterator<Branch> m_last_letter_branch; // Need this for GetNextWord()
 	std::string m_current_word_stack;
 	std::fstream m_output_file;
+
+	list<ordered_list<Branch>::l_iterator> m_iteration_stack;
+	std::string m_iteration_word_stack;
 };

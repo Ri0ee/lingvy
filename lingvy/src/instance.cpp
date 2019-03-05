@@ -23,13 +23,23 @@ int Instance::Run() {
 	//std::cout << "Amount of letters added: " << unique_letter_amount << "\n";
 	//std::cout << "Size of dictionary (mb): " <<	unique_letter_amount * total_sizeof / 1024 / 1024 << "\n";
 
+	//std::string word;
+	//do {
+	//	std::cout << "Enter word to search: ";
+	//	std::cin >> word;
+	//	if (dictionary.WordExists(word)) 
+	//		std::cout << "word \"" << word << "\" exists in dictionary\n";
+	//} while (word != "_");
+
 	std::string word;
-	do {
-		std::cout << "Enter word to search: ";
-		std::cin >> word;
-		if (dictionary.WordExists(word)) 
-			std::cout << "word \"" << word << "\" exists in dictionary\n";
-	} while (word != "_");
+	dictionary.GetFirstWord(word);
+	std::cout << "First word: " << word << "\n";
+
+	int i = 0;
+	while (dictionary.GetNextWord(word) && i < 100) {
+		std::cout << "Next word: " << word << "\n";
+		i++;
+	}
 
 	if (!SaveData(dictionary))
 		std::cout << "Failed to save data\n";

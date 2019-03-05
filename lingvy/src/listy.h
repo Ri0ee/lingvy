@@ -93,12 +93,12 @@ public:
 
 	list(list& list_) {
 		for (auto it = list_.begin(); it != list_.end(); it++) 
-			push(*it);
+			push_back(*it);
 	}
 
 	list(l_iterator begin_iterator_, l_iterator end_iterator_ = l_iterator(nullptr)) { 
 		for (auto it = begin_iterator_; it != end_iterator_; it++)
-			push(*it);
+			push_back(*it);
 	}
 
 	~list() {
@@ -106,7 +106,7 @@ public:
 	}
 	
 	// Push data to the end of the list
-	l_iterator push(TL data_) {
+	l_iterator push_back(TL data_) {
 		if (m_head == nullptr)
 			return push_front(data_);
 
@@ -179,6 +179,11 @@ public:
 	// Removes all elements from the list
 	void clear() {
 		while (pop_front());
+	}
+	
+	bool empty() {
+		if(m_head == nullptr) return true;
+		return false;
 	}
 
 	// Searches for the first appearance of data in list

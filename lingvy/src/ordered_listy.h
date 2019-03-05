@@ -93,12 +93,12 @@ public:
 
 	ordered_list(ordered_list& list_) {
 		for (auto it = list_.begin(); it != list_.end(); it++) 
-			push(*it);
+			push_back(*it);
 	}
 
 	ordered_list(l_iterator begin_iterator_, l_iterator end_iterator_ = l_iterator(nullptr)) {
 		for (auto it = begin_iterator_; it != end_iterator_; it++)
-			push(*it);
+			push_back(*it);
 	}
 
 	~ordered_list() {
@@ -118,7 +118,7 @@ public:
 			current_pos++;
 		}
 
-		return push(data_); // If we didn't find elements that have bigger value than ours does
+		return push_back(data_); // If we didn't find elements that have bigger value than ours does
 	}
 
 	// Remove last element. Returns true if removed anything
@@ -165,6 +165,11 @@ public:
 	// Removes all elements from the list
 	void clear() {
 		while (pop_front());
+	}
+	
+	bool empty() {
+		if(m_head == nullptr) return true;
+		return false;
 	}
 
 	// Searches for the first appearance of data in list
@@ -274,7 +279,7 @@ private:
 	}
 
 	// Push data to the end of the list
-	l_iterator push(TL data_) {
+	l_iterator push_back(TL data_) {
 		if (m_head == nullptr)
 			return push_front(data_);
 
