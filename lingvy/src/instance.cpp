@@ -32,14 +32,23 @@ int Instance::Run() {
 	//} while (word != "_");
 
 	std::string word;
-	dictionary.GetFirstWord(word);
-	std::cout << "First word: " << word << "\n";
+	//dictionary.GetFirstWord(word);
+	//std::cout << "First word: " << word << "\n";
 
-	int i = 0;
-	while (dictionary.GetNextWord(word) && i < 100) {
-		std::cout << "Next word: " << word << "\n";
-		i++;
-	}
+	//int i = 0;
+	//while (dictionary.GetNextWord(word) && i < 100) {
+	//	std::cout << "Next word: " << word << "\n";
+	//	i++;
+	//}
+
+	Time time_manager;
+	time_manager.StartTimeMeasure();
+
+	dictionary.GetFirstWord(word);
+	while (dictionary.GetNextWord(word));
+
+	time_manager.EndTimeMeasure();
+	std::cout << "Iterating over " << dictionary.WordCount() << " words took " << time_manager.GetTimeMeasure() << " seconds\n";
 
 	if (!SaveData(dictionary))
 		std::cout << "Failed to save data\n";
