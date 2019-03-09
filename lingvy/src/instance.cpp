@@ -23,15 +23,19 @@ int Instance::Run() {
 	//std::cout << "Amount of letters added: " << unique_letter_amount << "\n";
 	//std::cout << "Size of dictionary (mb): " <<	unique_letter_amount * total_sizeof / 1024 / 1024 << "\n";
 
-	//std::string word;
-	//do {
-	//	std::cout << "Enter word to search: ";
-	//	std::cin >> word;
-	//	if (dictionary.WordExists(word)) 
-	//		std::cout << "word \"" << word << "\" exists in dictionary\n";
-	//} while (word != "_");
-
 	std::string word;
+	do {
+		std::cin >> word;
+		if (dictionary.WordExists(word))
+			std::cout << "word \"" << word << "\" is correct\n";
+		else {
+			std::string correct_word;
+			correct_word = dictionary.MakeCorrect(word);
+			std::cout << "word \"" << word << "\" is incorrect, correct one should be: \"" << correct_word << "\"\n";
+		}
+	} while (word != "_");
+
+	//std::string word;
 	//dictionary.GetFirstWord(word);
 	//std::cout << "First word: " << word << "\n";
 
@@ -41,14 +45,14 @@ int Instance::Run() {
 	//	i++;
 	//}
 
-	Time time_manager;
-	time_manager.StartTimeMeasure();
+	//Time time_manager;
+	//time_manager.StartTimeMeasure();
 
-	dictionary.GetFirstWord(word);
-	while (dictionary.GetNextWord(word));
+	//dictionary.GetFirstWord(word);
+	//while (dictionary.GetNextWord(word));
 
-	time_manager.EndTimeMeasure();
-	std::cout << "Iterating over " << dictionary.WordCount() << " words took " << time_manager.GetTimeMeasure() << " seconds\n";
+	//time_manager.EndTimeMeasure();
+	//std::cout << "Iterating over " << dictionary.WordCount() << " words took " << time_manager.GetTimeMeasure() << " seconds\n";
 
 	if (!SaveData(dictionary))
 		std::cout << "Failed to save data\n";

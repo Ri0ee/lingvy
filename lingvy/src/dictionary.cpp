@@ -94,17 +94,17 @@ bool Dictionary::GetFirstWord(std::string& word_) {
 
 	m_current_word_stack.clear();
 	m_iteration_stack.clear();
-	m_iteration_stack.push_back(m_initial_branches.begin());
 
+	m_iteration_stack.push_front(m_initial_branches.begin());
 	auto root = *m_iteration_stack.begin();
 
 	while (root != ordered_list<Branch>::l_iterator(nullptr)) {
 		m_current_word_stack += (*root).letter();
-		m_iteration_stack.push_back(root);
+		m_iteration_stack.push_front(root);
 
 		if ((*root).word_finisher()) {
 			word_ = m_current_word_stack;
-			m_iteration_stack.pop_front();
+			m_iteration_stack.pop();
 			return true;
 		}
 
@@ -117,25 +117,25 @@ bool Dictionary::GetFirstWord(std::string& word_) {
 bool Dictionary::GetNextWord(std::string& word_) {
 	if (m_initial_branches.empty()) return false; // Return false if there are no words in dictionary
 
-	auto root = *m_iteration_stack.tail();
-	auto root2 = (*root).branches().begin();
+	auto root = *m_iteration_stack.begin(); // Current pos in tree
+	auto root2 = (*root).branches().begin(); // Next branch (pos) in tree
 
 	while (true) {
 		if (root2 == ordered_list<Branch>::l_iterator(nullptr)) { // This is the end of tree branch
-			m_iteration_stack.pop(); // Remove last branch from the stack
+			m_iteration_stack.pop_front(); // Remove last branch from the stack
 
-			if (m_iteration_stack.empty()) {
+			if (m_iteration_stack.empty()) { // Got to the initial tree branch
 				root = m_initial_branches.find_first(m_current_word_stack[m_current_word_stack.size() - 1]);
 				root++;
-				if (root == ordered_list<Branch>::l_iterator(nullptr))
+				if (root == ordered_list<Branch>::l_iterator(nullptr)) // If there are no more initial branches
 					return false;
 
-				m_iteration_stack.push_back(root);
+				m_iteration_stack.push_front(root);
 				root2 = (*root).branches().begin();
 				m_current_word_stack = (*root).letter();
 			}
 			else {
-				root = *m_iteration_stack.tail();
+				root = *m_iteration_stack.begin();
 
 				// Set root2 the value of unvisited from root branch 
 				root2 = (*root).branches().find_first(m_current_word_stack[m_current_word_stack.size() - 1]);
@@ -146,7 +146,7 @@ bool Dictionary::GetNextWord(std::string& word_) {
 		}
 		else {
 			m_current_word_stack += (*root2).letter();
-			m_iteration_stack.push_back(root2);
+			m_iteration_stack.push_front(root2);
 
 			if ((*root2).word_finisher()) {
 				word_ = m_current_word_stack;
@@ -157,6 +157,47 @@ bool Dictionary::GetNextWord(std::string& word_) {
 		}
 	}
 
-	// Should never get here
 	return false;
+}
+
+std::string Dictionary::MakeCorrect(const std::string& word_) {
+	std::string temp_word;
+	std::string res_word;
+
+	m_s1 = " " + word_;
+
+	int min_distance = INT_MAX;
+	GetFirstWord(temp_word);
+	do {
+		m_s2 = " " + temp_word;
+		int temp_distance = LDistance();
+		if (temp_distance < min_distance) {
+			res_word = temp_word;
+			min_distance = temp_distance;
+		}
+	} while (GetNextWord(temp_word) && min_distance != 1);
+
+	return res_word;
+}
+
+int Dictionary::LDistance() {
+	return RLDistance(m_s1.size() - 1, m_s2.size() - 1);
+}
+
+int Dictionary::RLDistance(const int i, const int j) {
+	if (i == 0 && j == 0) return 0;
+	if (j == 0 && i > 0) return i;
+	if (i == 0 && j > 0) return j;
+
+	int m = std::min(
+		std::min(RLDistance(i, j - 1) + 1, RLDistance(i - 1, j) + 1),
+		RLDistance(i - 1, j - 1) + MDistance(m_s1[i], m_s2[j])
+	);
+
+	return m;
+}
+
+int Dictionary::MDistance(const char s1, const char s2) {
+	if (s1 == s2) return 0;
+	return 1;
 }

@@ -6,6 +6,7 @@
 
 #include <string>
 #include <fstream>
+#include <algorithm>
 #include "ordered_listy.h"
 #include "listy.h"
 
@@ -80,12 +81,16 @@ public:
 	bool LoadFromFile(const std::string& file_name_);
 	bool GetFirstWord(std::string& word_);
 	bool GetNextWord(std::string& word_);
+	std::string MakeCorrect(const std::string& word_);
+	int LDistance();
+	int RLDistance(const int i, const int j);
+	int MDistance(const char s1, const char s2);
 
 	unsigned long long UniqueLetterAmount() {
 		unsigned long long temp_letter_counter = 0;
-		for (auto it = m_initial_branches.begin(); it != m_initial_branches.end(); it++) {
+		for (auto it = m_initial_branches.begin(); it != m_initial_branches.end(); it++)
 			temp_letter_counter += (*it).size();
-		}
+
 		return temp_letter_counter;
 	}
 
@@ -106,4 +111,7 @@ private:
 
 	list<ordered_list<Branch>::l_iterator> m_iteration_stack;
 	std::string m_iteration_word_stack;
+
+	std::string m_s1;
+	std::string m_s2;
 };
