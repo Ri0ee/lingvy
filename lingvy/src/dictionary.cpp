@@ -182,9 +182,10 @@ int Dictionary::LDistance(const std::string& word_1_, const std::string& word_2_
 
 	std::string temp_word_1 = " " + word_1_;
 	std::string temp_word_2 = " " + word_2_;
-	int d[MAX_LDISTANCE_WORD_LENGTH][MAX_LDISTANCE_WORD_LENGTH];
-	int subst = -1;
+	int d[MAX_LDISTANCE_WORD_LENGTH][MAX_LDISTANCE_WORD_LENGTH]; // An array for dynamic storage of temp. distances
+	int subst = -1; // Cost for an substitution
 
+	// Fill top-most and left-most rows with values from 1..sizes of words
 	for (int i = 0; i < temp_word_1.size(); i++) d[i][0] = i;
 	for (int i = 0; i < temp_word_2.size(); i++) d[0][i] = i;
 

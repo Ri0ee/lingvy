@@ -10,7 +10,7 @@
 #include "ordered_listy.h"
 #include "listy.h"
 
-#define MAX_LDISTANCE_WORD_LENGTH 100
+#define MAX_LDISTANCE_WORD_LENGTH 100 // Memory consumed by LDistance will be MAX_LDISTANCE_WORD_LENGTH^2 * 4 bytes
 
 class Branch {
 public:
