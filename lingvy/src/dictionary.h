@@ -108,12 +108,9 @@ private:
 	ordered_list<Branch> m_initial_branches; // list of first word letters
 	int m_word_count = 0; // Total count of words in dictionary
 
-	std::string m_current_word_stack;
-	std::fstream m_output_file;
+	std::string m_current_word_stack; // For saving to file
+	std::fstream m_output_file; // For saving data to file
 
-	list<ordered_list<Branch>::l_iterator> m_iteration_stack;
-	std::string m_iteration_word_stack;
-
-	std::string m_s1;
-	std::string m_s2;
+	list<ordered_list<Branch>::l_iterator> m_iteration_stack; // For itarting through tree
+	std::string m_iteration_word_stack; // For iterating through tree
 };
