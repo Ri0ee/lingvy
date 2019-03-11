@@ -26,14 +26,13 @@ int Instance::Run() {
 	std::string word;
 	do {
 		std::cin >> word;
+
+		if (word == "_") break;
 		if (dictionary.WordExists(word))
 			std::cout << "word \"" << word << "\" is correct\n";
-		else {
-			std::string correct_word;
-			correct_word = dictionary.MakeCorrect(word);
-			std::cout << "word \"" << word << "\" is incorrect, correct one should be: \"" << correct_word << "\"\n";
-		}
-	} while (word != "_");
+		else
+			std::cout << "word \"" << word << "\" is incorrect, correct one should be: \"" << dictionary.MakeCorrect(word) << "\"\n";
+	} while (true);
 
 	//std::string word;
 	//dictionary.GetFirstWord(word);
