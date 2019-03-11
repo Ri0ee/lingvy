@@ -82,9 +82,9 @@ public:
 	bool GetFirstWord(std::string& word_);
 	bool GetNextWord(std::string& word_);
 	std::string MakeCorrect(const std::string& word_);
-	int LDistance();
-	int RLDistance(const int i, const int j);
-	int MDistance(const char s1, const char s2);
+	int LDistance(const std::string& word_1_, const std::string& word_2_);
+	//int RLDistance(const int i, const int j);
+	//int MDistance(const char s1, const char s2);
 
 	unsigned long long UniqueLetterAmount() {
 		unsigned long long temp_letter_counter = 0;

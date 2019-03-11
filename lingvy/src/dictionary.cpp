@@ -164,13 +164,10 @@ std::string Dictionary::MakeCorrect(const std::string& word_) {
 	std::string temp_word;
 	std::string res_word;
 
-	m_s1 = " " + word_;
-
 	int min_distance = INT_MAX;
 	GetFirstWord(temp_word);
 	do {
-		m_s2 = " " + temp_word;
-		int temp_distance = LDistance();
+		int temp_distance = LDistance(temp_word, word_);
 		if (temp_distance < min_distance) {
 			res_word = temp_word;
 			min_distance = temp_distance;
@@ -180,24 +177,46 @@ std::string Dictionary::MakeCorrect(const std::string& word_) {
 	return res_word;
 }
 
-int Dictionary::LDistance() {
-	return RLDistance(m_s1.size() - 1, m_s2.size() - 1);
+int Dictionary::LDistance(const std::string& word_1_, const std::string& word_2_) {
+	std::string temp_word_1 = " " + word_1_;
+	std::string temp_word_2 = " " + word_2_;
+
+	int d[100][100];
+	int subst = -1;
+
+	for (int i = 0; i < temp_word_1.size(); i++) d[i][0] = i;
+	for (int i = 0; i < temp_word_2.size(); i++) d[0][i] = i;
+
+	for (int i = 1; i < temp_word_1.size(); i++) {
+		for (int j = 1; j < temp_word_2.size(); j++) {
+			subst = (temp_word_1[i] == temp_word_2[j] ? 0 : 1);
+
+			d[i][j] = std::min(
+				std::min(
+					d[i][j - 1] + 1,
+					d[i - 1][j] + 1),
+					d[i - 1][j - 1] + subst
+			);
+		}
+	}
+
+	return d[temp_word_1.size() - 1][temp_word_2.size() - 1];
 }
 
-int Dictionary::RLDistance(const int i, const int j) {
-	if (i == 0 && j == 0) return 0;
-	if (j == 0 && i > 0) return i;
-	if (i == 0 && j > 0) return j;
-
-	int m = std::min(
-		std::min(RLDistance(i, j - 1) + 1, RLDistance(i - 1, j) + 1),
-		RLDistance(i - 1, j - 1) + MDistance(m_s1[i], m_s2[j])
-	);
-
-	return m;
-}
-
-int Dictionary::MDistance(const char s1, const char s2) {
-	if (s1 == s2) return 0;
-	return 1;
-}
+//int Dictionary::RLDistance(const int i, const int j) {
+//	if (i == 0 && j == 0) return 0;
+//	if (j == 0 && i > 0) return i;
+//	if (i == 0 && j > 0) return j;
+//
+//	int m = std::min(
+//		std::min(RLDistance(i, j - 1) + 1, RLDistance(i - 1, j) + 1),
+//		RLDistance(i - 1, j - 1) + MDistance(m_s1[i], m_s2[j])
+//	);
+//
+//	return m;
+//}
+//
+//int Dictionary::MDistance(const char s1, const char s2) {
+//	if (s1 == s2) return 0;
+//	return 1;
+//}
