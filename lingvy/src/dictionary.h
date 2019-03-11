@@ -10,6 +10,8 @@
 #include "ordered_listy.h"
 #include "listy.h"
 
+#define MAX_LDISTANCE_WORD_LENGTH 100
+
 class Branch {
 public:
 	Branch() : m_letter(0), m_branches(), m_word_finisher(false) {}

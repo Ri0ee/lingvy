@@ -178,10 +178,11 @@ std::string Dictionary::MakeCorrect(const std::string& word_) {
 }
 
 int Dictionary::LDistance(const std::string& word_1_, const std::string& word_2_) {
+	if (word_1_.size() > MAX_LDISTANCE_WORD_LENGTH || word_2_.size() > MAX_LDISTANCE_WORD_LENGTH) return -1;
+
 	std::string temp_word_1 = " " + word_1_;
 	std::string temp_word_2 = " " + word_2_;
-
-	int d[100][100];
+	int d[MAX_LDISTANCE_WORD_LENGTH][MAX_LDISTANCE_WORD_LENGTH];
 	int subst = -1;
 
 	for (int i = 0; i < temp_word_1.size(); i++) d[i][0] = i;
