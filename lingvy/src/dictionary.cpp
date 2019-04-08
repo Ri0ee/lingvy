@@ -164,17 +164,29 @@ std::string Dictionary::MakeCorrect(const std::string& word_) {
 	std::string temp_word;
 	std::string res_word;
 
-	int min_distance = INT_MAX;
-	GetFirstWord(temp_word);
-	do {
-		int temp_distance = LDistance(temp_word, word_);
-		if (temp_distance < min_distance) {
-			res_word = temp_word;
-			min_distance = temp_distance;
-		}
-	} while (GetNextWord(temp_word) && min_distance != 1);
+	Buffer buffer;
+	Producer producer(&buffer, this);
+	Consumer consumer(&buffer, this, word_);
 
-	return res_word;
+	std::thread producer_t(&Producer::Run, &producer);
+	std::thread consumer_t(&Consumer::Run, &consumer);
+
+	producer_t.join();
+	consumer_t.join();
+
+	std::pair<std::string, int> best_result = buffer.PopResult();
+
+	//int min_distance = INT_MAX;
+	//GetFirstWord(temp_word);
+	//do {
+	//	int temp_distance = LDistance(temp_word, word_);
+	//	if (temp_distance < min_distance) {
+	//		res_word = temp_word;
+	//		min_distance = temp_distance;
+	//	}
+	//} while (GetNextWord(temp_word) && min_distance != 1);
+
+	return best_result.first;
 }
 
 int Dictionary::LDistance(const std::string& word_1_, const std::string& word_2_) {
@@ -204,21 +216,3 @@ int Dictionary::LDistance(const std::string& word_1_, const std::string& word_2_
 
 	return d[temp_word_1.size() - 1][temp_word_2.size() - 1];
 }
-
-//int Dictionary::RLDistance(const int i, const int j) {
-//	if (i == 0 && j == 0) return 0;
-//	if (j == 0 && i > 0) return i;
-//	if (i == 0 && j > 0) return j;
-//
-//	int m = std::min(
-//		std::min(RLDistance(i, j - 1) + 1, RLDistance(i - 1, j) + 1),
-//		RLDistance(i - 1, j - 1) + MDistance(m_s1[i], m_s2[j])
-//	);
-//
-//	return m;
-//}
-//
-//int Dictionary::MDistance(const char s1, const char s2) {
-//	if (s1 == s2) return 0;
-//	return 1;
-//}

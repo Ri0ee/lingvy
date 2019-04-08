@@ -34,7 +34,6 @@ int Instance::Run() {
 			std::cout << "word \"" << word << "\" is incorrect, correct one should be: \"" << dictionary.MakeCorrect(word) << "\"\n";
 	} while (true);
 
-	//std::string word;
 	//dictionary.GetFirstWord(word);
 	//std::cout << "First word: " << word << "\n";
 
@@ -44,6 +43,7 @@ int Instance::Run() {
 	//	i++;
 	//}
 
+	//std::string word;
 	//Time time_manager;
 	//time_manager.StartTimeMeasure();
 
