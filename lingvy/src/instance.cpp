@@ -12,46 +12,30 @@ int Instance::Run() {
 		if (!ReadDictionary(m_input_file_name, dictionary))
 			std::cout << "Cannot open file " << m_input_file_name << "\n";
 
-	//unsigned long long unique_letter_amount = dictionary.UniqueLetterAmount();
-	//int sizeof_branch = sizeof(Branch);
-	//int sizeof_list_branch = sizeof(ordered_list<Branch>);
-	//int total_sizeof = sizeof_branch + sizeof_list_branch;
+	Time time_manager;
+	while (true) {
+		std::cout << "Searching word appl. ";
 
-	//std::cout << "Sizeof Branch: " << sizeof_branch << "\n";
-	//std::cout << "Sizeof list<Branch>: " << sizeof_list_branch << "\n";
-	//std::cout << "Total sizeof: " << total_sizeof << "\n";
-	//std::cout << "Amount of letters added: " << unique_letter_amount << "\n";
-	//std::cout << "Size of dictionary (mb): " <<	unique_letter_amount * total_sizeof / 1024 / 1024 << "\n";
+		time_manager.StartTimeMeasure();
+		auto correct = dictionary.MakeCorrect("appl");
+		time_manager.EndTimeMeasure();
 
-	std::string word;
-	do {
-		std::cin >> word;
-
-		if (word == "_") break;
-		if (dictionary.WordExists(word))
-			std::cout << "word \"" << word << "\" is correct\n";
-		else
-			std::cout << "word \"" << word << "\" is incorrect, correct one should be: \"" << dictionary.MakeCorrect(word) << "\"\n";
-	} while (true);
-
-	//dictionary.GetFirstWord(word);
-	//std::cout << "First word: " << word << "\n";
-
-	//int i = 0;
-	//while (dictionary.GetNextWord(word) && i < 100) {
-	//	std::cout << "Next word: " << word << "\n";
-	//	i++;
-	//}
+		std::cout << 
+			"corrected: " << correct.first << 
+			"; distance: " << correct.second << 
+			"; time: " << time_manager.GetTimeMeasure() << "\n";
+	}
 
 	//std::string word;
-	//Time time_manager;
-	//time_manager.StartTimeMeasure();
+	//do {
+	//	std::cin >> word;
 
-	//dictionary.GetFirstWord(word);
-	//while (dictionary.GetNextWord(word));
-
-	//time_manager.EndTimeMeasure();
-	//std::cout << "Iterating over " << dictionary.WordCount() << " words took " << time_manager.GetTimeMeasure() << " seconds\n";
+	//	if (word == "_") break;
+	//	if (dictionary.WordExists(word))
+	//		std::cout << "word \"" << word << "\" is correct\n";
+	//	else
+	//		std::cout << "word \"" << word << "\" is incorrect, correct one should be: \"" << dictionary.MakeCorrect(word) << "\"\n";
+	//} while (true);
 
 	if (!SaveData(dictionary))
 		std::cout << "Failed to save data\n";
@@ -65,13 +49,13 @@ bool Instance::ReadDictionary(const std::string& dict_path_, Dictionary& diction
 
 	std::cout << "Reading data from " << dict_path_ << "\n";
 
-	Time time_manager;
-	time_manager.StartTimeMeasure();
+	//Time time_manager;
+	//time_manager.StartTimeMeasure();
 
 	bool ret = dictionary_.LoadFromFile(dict_path_);
 
-	time_manager.EndTimeMeasure();
-	std::cout << "Reading dictionary data took " << time_manager.GetTimeMeasure() << " seconds; " << dictionary_.WordCount() << " words loaded\n";
+	//time_manager.EndTimeMeasure();
+	//std::cout << "Reading dictionary data took " << time_manager.GetTimeMeasure() << " seconds; " << dictionary_.WordCount() << " words loaded\n";
 	
 	return ret;
 }
@@ -87,13 +71,13 @@ bool Instance::SaveData(Dictionary& dictionary_) {
 
 	std::cout << "Saving dictionary data...\n";
 
-	Time time_manager;
-	time_manager.StartTimeMeasure();
+	//Time time_manager;
+	//time_manager.StartTimeMeasure();
 
 	bool ret = dictionary_.SaveToFile(data_path);
 
-	time_manager.EndTimeMeasure();
-	std::cout << "Saving dictionary data took " << time_manager.GetTimeMeasure() << " seconds\n";
+	//time_manager.EndTimeMeasure();
+	//std::cout << "Saving dictionary data took " << time_manager.GetTimeMeasure() << " seconds\n";
 
 	return ret;
 }

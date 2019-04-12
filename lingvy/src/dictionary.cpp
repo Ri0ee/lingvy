@@ -160,33 +160,18 @@ bool Dictionary::GetNextWord(std::string& word_) {
 	return false;
 }
 
-std::string Dictionary::MakeCorrect(const std::string& word_) {
-	std::string temp_word;
-	std::string res_word;
-
+std::pair<std::string, int> Dictionary::MakeCorrect(const std::string& word_) {
 	Buffer buffer;
-	Producer producer(&buffer, this);
-	Consumer consumer(&buffer, this, word_);
+	Producer* prod = new Producer(buffer, this);
+	Consumer* cons = new Consumer(buffer, this, word_);
 
-	std::thread producer_t(&Producer::Run, &producer);
-	std::thread consumer_t(&Consumer::Run, &consumer);
+	prod->Run(1);
+	cons->Run(3);
+	
+	delete prod;
+	delete cons;
 
-	producer_t.join();
-	consumer_t.join();
-
-	std::pair<std::string, int> best_result = buffer.PopResult();
-
-	//int min_distance = INT_MAX;
-	//GetFirstWord(temp_word);
-	//do {
-	//	int temp_distance = LDistance(temp_word, word_);
-	//	if (temp_distance < min_distance) {
-	//		res_word = temp_word;
-	//		min_distance = temp_distance;
-	//	}
-	//} while (GetNextWord(temp_word) && min_distance != 1);
-
-	return best_result.first;
+	return buffer.PopResult();
 }
 
 int Dictionary::LDistance(const std::string& word_1_, const std::string& word_2_) {
