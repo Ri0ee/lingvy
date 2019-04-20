@@ -89,84 +89,13 @@ bool Dictionary::LoadFromFile(const std::string& file_name_) {
 	return true;
 }
 
-bool Dictionary::GetFirstWord(std::string& word_) {
-	if (m_initial_branches.empty()) return false;
-
-	m_current_word_stack.clear();
-	m_iteration_stack.clear();
-
-	m_iteration_stack.push_front(m_initial_branches.begin());
-	auto root = *m_iteration_stack.begin();
-
-	while (root != ordered_list<Branch>::l_iterator(nullptr)) {
-		m_current_word_stack += (*root).letter();
-		m_iteration_stack.push_front(root);
-
-		if ((*root).word_finisher()) {
-			word_ = m_current_word_stack;
-			m_iteration_stack.pop();
-			return true;
-		}
-
-		root = (*root).branches().begin();
-	}
-
-	return false; 
-}
-
-bool Dictionary::GetNextWord(std::string& word_) {
-	if (m_initial_branches.empty()) return false; // Return false if there are no words in dictionary
-
-	auto root = *m_iteration_stack.begin(); // Current pos in tree
-	auto root2 = (*root).branches().begin(); // Next branch (pos) in tree
-
-	while (true) {
-		if (root2 == ordered_list<Branch>::l_iterator(nullptr)) { // This is the end of tree branch
-			m_iteration_stack.pop_front(); // Remove last branch from the stack
-
-			if (m_iteration_stack.empty()) { // Got to the initial tree branch
-				root = m_initial_branches.find_first(m_current_word_stack[m_current_word_stack.size() - 1]);
-				root++;
-				if (root == ordered_list<Branch>::l_iterator(nullptr)) // If there are no more initial branches
-					return false;
-
-				m_iteration_stack.push_front(root);
-				root2 = (*root).branches().begin();
-				m_current_word_stack = (*root).letter();
-			}
-			else {
-				root = *m_iteration_stack.begin();
-
-				// Set root2 the value of unvisited from root branch 
-				root2 = (*root).branches().find_first(m_current_word_stack[m_current_word_stack.size() - 1]);
-				root2++;
-
-				m_current_word_stack.pop_back();
-			}
-		}
-		else {
-			m_current_word_stack += (*root2).letter();
-			m_iteration_stack.push_front(root2);
-
-			if ((*root2).word_finisher()) {
-				word_ = m_current_word_stack;
-				return true;
-			}
-
-			root2 = (*root2).branches().begin();
-		}
-	}
-
-	return false;
-}
-
 std::pair<std::string, int> Dictionary::MakeCorrect(const std::string& word_) {
-	Buffer buffer;
-	Producer* prod = new Producer(buffer, this);
-	Consumer* cons = new Consumer(buffer, this, word_);
+	LDBuffer buffer;
+	LDProducer* prod = new LDProducer(buffer, this);
+	LDConsumer* cons = new LDConsumer(buffer, this, word_);
 
-	prod->Run(1);
-	cons->Run(3);
+	prod->Run(2);
+	cons->Run(2);
 	
 	delete prod;
 	delete cons;
@@ -200,4 +129,80 @@ int Dictionary::LDistance(const std::string& word_1_, const std::string& word_2_
 	}
 
 	return d[temp_word_1.size() - 1][temp_word_2.size() - 1];
+}
+
+bool Dictionary::Iterator::GetFirst(std::string& word_)
+{
+	if (m_initial_branches.empty()) return false;
+
+	m_iteration_word_stack.clear();
+	m_iteration_stack.clear();
+	m_range.second = std::min(m_range.second, m_initial_branches.size());
+	m_current_initial_branch = m_range.first;
+
+	m_iteration_stack.push_front(m_initial_branches.seek(m_range.first));
+	auto root = *m_iteration_stack.begin();
+
+	while (root != ordered_list<Branch>::l_iterator(nullptr)) {
+		m_iteration_word_stack += (*root).letter();
+		m_iteration_stack.push_front(root);
+
+		if ((*root).word_finisher()) {
+			word_ = m_iteration_word_stack;
+			m_iteration_stack.pop();
+			return true;
+		}
+
+		root = (*root).branches().begin();
+	}
+
+	return false;
+}
+
+bool Dictionary::Iterator::GetNext(std::string& word_)
+{
+	if (m_initial_branches.empty()) return false; // Return false if there are no words in dictionary
+
+	auto root = *m_iteration_stack.begin(); // Current pos in tree
+	auto root2 = (*root).branches().begin(); // Next branch (pos) in tree
+
+	while (true) {
+		if (root2 == ordered_list<Branch>::l_iterator(nullptr)) { // This is the end of tree branch
+			m_iteration_stack.pop_front(); // Remove last branch from the stack
+
+			if (m_iteration_stack.empty()) { // Got to the initial tree branch
+				root = m_initial_branches.find_first(m_iteration_word_stack[m_iteration_word_stack.size() - 1]);
+				root++;
+				m_current_initial_branch++;
+				if (root == ordered_list<Branch>::l_iterator(nullptr) || m_current_initial_branch == m_range.second) // If there are no more initial branches
+					return false;
+
+				m_iteration_stack.push_front(root);
+				root2 = (*root).branches().begin();
+				m_iteration_word_stack = (*root).letter();
+			}
+			else {
+				root = *m_iteration_stack.begin();
+
+				// Set root2 the value of unvisited from root branch 
+				root2 = (*root).branches().find_first(m_iteration_word_stack[m_iteration_word_stack.size() - 1]);
+				root2++;
+
+				m_iteration_word_stack.pop_back();
+			}
+		}
+		else {
+			m_iteration_word_stack += (*root2).letter();
+			m_iteration_stack.push_front(root2);
+
+			if ((*root2).word_finisher()) {
+				word_ = m_iteration_word_stack;
+				return true;
+			}
+
+			root2 = (*root2).branches().begin();
+		}
+	}
+
+	return false;
 }

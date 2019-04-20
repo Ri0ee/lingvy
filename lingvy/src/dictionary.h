@@ -29,8 +29,6 @@ public:
 
 	Branch(char letter_) : m_letter(letter_), m_branches(), m_word_finisher(false) {}
 
-	~Branch() {}
-
 	bool operator==(Branch& branch_) {
 		if (m_letter == branch_.letter()) return true;
 		return false;
@@ -79,31 +77,59 @@ private:
 class Dictionary {
 public:
 	
-	class Buffer {
+	class Iterator {
 	public:
-		Buffer() {
-			m_best_result = std::make_pair("", INT_MAX);
-		}
+		Iterator(ordered_list<Branch>& initial_branches_, std::pair<int, int> range_ = std::make_pair(0, INT_MAX)) :
+			m_initial_branches(initial_branches_), m_range(range_), m_current_initial_branch(m_range.first) {}
 
-		void Push(const std::string& word_) {
+		Iterator(const Iterator& copy_iter_) : 
+			m_initial_branches(copy_iter_.m_initial_branches) {}
+
+		bool GetFirst(std::string& word_);
+		bool GetNext(std::string& word_);
+
+	private:
+		ordered_list<Branch>& m_initial_branches; // Reference to the dictionary's initial branches
+
+		list<ordered_list<Branch>::l_iterator> m_iteration_stack; // For itarting through tree
+		std::string m_iteration_word_stack; // For iterating through tree
+
+		// Iteration range. Iterator will only iterate between m_range.first (including) and m_range.second (not including) initial branches
+		std::pair<unsigned int, unsigned int> m_range;
+		unsigned int m_current_initial_branch;
+	};
+
+	class LDBuffer {
+	public:
+		LDBuffer() : 
+			m_best_result(std::make_pair("", INT_MAX)) {}
+
+		bool Push(const std::string& word_) {
 			std::unique_lock<std::mutex> locker(mu);
 			cond.wait(locker, [this] {
-				return !(m_data.size() >= m_max_size);
+				return !(m_data.size() >= m_max_size) || m_should_finish;
 			});
+
+			if (m_should_finish) {
+				locker.unlock();
+				cond.notify_all();
+				return false;
+			}
 
 			m_data.push_back(word_);
 
 			locker.unlock();
 			cond.notify_one();
+			return true;
 		}
 
 		bool Pop(std::string& word_) {
 			std::unique_lock<std::mutex> locker(mu);
 			cond.wait(locker, [this] {
-				return !m_data.empty() || (m_done && m_data.empty());
+				return !m_data.empty() || ((m_total_producer_count == m_finished_producer_count) && m_data.empty()) || m_should_finish;
 			});
 
-			if (m_done && m_data.empty()) {
+			if ((m_total_producer_count == m_finished_producer_count) && m_data.empty() || m_should_finish) {
 				locker.unlock();
 				cond.notify_one();
 				return false;
@@ -138,32 +164,37 @@ public:
 			return m_best_result;
 		}
 
-		void SetDone() {
-			m_done = true;
+		void FinishProduction() {
+			m_finished_producer_count++;
 			cond.notify_all();
 		}
 
-		bool ShouldFinish() {
-			return m_should_finish;
+		void CheckoutProducer() {
+			m_total_producer_count++;
+			cond.notify_all();
 		}
 
 	private:
 		std::deque<std::string> m_data;
-		const int m_max_size = 10;
+		const unsigned int m_max_size = 10;
 
 		std::pair<std::string, int> m_best_result;
 
-		bool m_done = false;
+		unsigned int m_total_producer_count = 0;
+		unsigned int m_finished_producer_count = 0;
 		bool m_should_finish = false;
+
 		std::mutex mu;
 		std::mutex res_mu;
 		std::condition_variable cond;
 	};
 
-	class Producer {
+	class LDProducer {
 	public:
-		Producer(Buffer& buffer_, Dictionary* caller_) : m_buffer(buffer_), m_caller(caller_) {}
-		~Producer() {
+		LDProducer(LDBuffer& buffer_, Dictionary* caller_) :
+			m_buffer(buffer_), m_caller(caller_) {}
+
+		~LDProducer() {
 			for (int i = 0; i < m_threads.size(); i++) {
 				m_threads[i]->join();
 				delete m_threads[i];
@@ -171,37 +202,50 @@ public:
 		}
 
 		void Run(int thread_count_) {
-			for (int i = 0; i < thread_count_; i++)
-				m_threads.push_back(new std::thread(&Producer::Tick, this));
+			unsigned int region_size = m_caller->InitialBranchCount() / thread_count_ + 1;
+			unsigned int low = 0;
+			unsigned int high = region_size;
+
+			for (int i = 0; i < thread_count_; i++) {
+				m_threads.push_back(new std::thread(&LDProducer::Tick, this, std::make_pair(low, high)));
+				low = high;
+				high += region_size;
+			}
 		}
 
-		void Tick() {
+		void Tick(std::pair<unsigned int, unsigned int> range_) {
+			m_buffer.CheckoutProducer(); // Register producer at buffer
+
 			std::string word;
-			bool status = m_caller->GetFirstWord(word);
+			auto iterator = m_caller->GetIteratorCopy(range_);
+
+			bool status = iterator.GetFirst(word);
 			while (true) {
 				if (status == false) {
-					m_buffer.SetDone();
+					m_buffer.FinishProduction();
 					break;
 				}
 
-				m_buffer.Push(word);
-				status = m_caller->GetNextWord(word);
+				if (!m_buffer.Push(word))
+					break;
+
+				status = iterator.GetNext(word);
 			}
 		}
 
 	private:
-		Buffer& m_buffer;
+		LDBuffer& m_buffer;
 		Dictionary* m_caller = nullptr;
 
 		std::vector<std::thread*> m_threads;
 	};
 
-	class Consumer {
+	class LDConsumer {
 	public:
-		Consumer(Buffer& buffer_, Dictionary* caller_, const std::string& dest_word_) : 
+		LDConsumer(LDBuffer& buffer_, Dictionary* caller_, const std::string& dest_word_) :
 			m_buffer(buffer_), m_caller(caller_), m_dest_word(dest_word_) {}
 
-		~Consumer() {
+		~LDConsumer() {
 			for (int i = 0; i < m_threads.size(); i++) {
 				m_threads[i]->join();
 				delete m_threads[i];
@@ -210,7 +254,7 @@ public:
 
 		void Run(int thread_count_) {
 			for (int i = 0; i < thread_count_; i++)
-				m_threads.push_back(new std::thread(&Consumer::Tick, this));
+				m_threads.push_back(new std::thread(&LDConsumer::Tick, this));
 		}
 
 		void Tick() {
@@ -225,7 +269,7 @@ public:
 		}
 
 	private:
-		Buffer& m_buffer;
+		LDBuffer& m_buffer;
 		Dictionary* m_caller = nullptr;
 
 		std::string m_dest_word;
@@ -234,16 +278,16 @@ public:
 
 	Dictionary() : m_initial_branches(), m_current_word_stack() {}
 
-	~Dictionary() {}
-
 	void AddWord(const std::string& word_);
 	bool WordExists(const std::string& word_);
 	bool SaveToFile(const std::string& file_name_);
 	bool LoadFromFile(const std::string& file_name_);
-	bool GetFirstWord(std::string& word_);
-	bool GetNextWord(std::string& word_);
 	std::pair<std::string, int> MakeCorrect(const std::string& word_);
 	int LDistance(const std::string& word_1_, const std::string& word_2_);
+
+	Iterator GetIteratorCopy(std::pair<unsigned int, unsigned int> range_ = std::make_pair(0, INT_MAX)) {
+		return Iterator(m_initial_branches, range_);
+	}
 
 	unsigned long long UniqueLetterAmount() {
 		unsigned long long temp_letter_counter = 0;
@@ -257,6 +301,10 @@ public:
 		return m_word_count;
 	}
 
+	int InitialBranchCount() {
+		return m_initial_branches.size();
+	}
+
 private:
 	char CharToLower(char letter_);
 	std::string WordToLower(const std::string& word_);
@@ -265,9 +313,6 @@ private:
 	ordered_list<Branch> m_initial_branches; // list of first word letters
 	int m_word_count = 0; // Total count of words in dictionary
 
-	std::string m_current_word_stack; // For saving to file
+	std::string m_current_word_stack; // For saving data to file
 	std::fstream m_output_file; // For saving data to file
-
-	list<ordered_list<Branch>::l_iterator> m_iteration_stack; // For itarting through tree
-	std::string m_iteration_word_stack; // For iterating through tree
 };

@@ -256,10 +256,8 @@ public:
 
 		return -1;
 	}
-
-private:
-	l_element* m_head = nullptr; // Pointer to the first element of the list
-
+	
+	// Returns iterator of element at position_
 	l_iterator seek(unsigned int position_) {
 		unsigned int current_position = 0;
 		for (auto it = begin(); it != end() && current_position <= position_; it++) {
@@ -270,13 +268,18 @@ private:
 		return l_iterator(nullptr);
 	}
 
+	// Returns iterator of element at position before position_
 	l_iterator seek_before(unsigned int position_) {
 		return seek(position_ - 1);
 	}
 
+	// Returns iterator of element at postion after position_
 	l_iterator seek_after(unsigned int position_) {
 		return seek(position_ + 1);
 	}
+
+private:
+	l_element* m_head = nullptr; // Pointer to the first element of the list
 
 	// Push data to the end of the list
 	l_iterator push_back(TL data_) {
