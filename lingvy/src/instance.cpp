@@ -12,39 +12,32 @@ int Instance::Run() {
 		if (!ReadDictionary(m_input_file_name, dictionary))
 			std::cout << "Cannot open file " << m_input_file_name << "\n";
 
-	//auto iterator = dictionary.GetIteratorCopy(std::make_pair(0, 1));
-	//std::string word;
-	//iterator.GetFirst(word);
-	//do {
-	//	std::cout << word << "\n";
-	//} while (iterator.GetNext(word) != false);
+	//double time_sum = 0;
+	//Time time_manager;
+	//for (int it = 0; it < 100; it++) {
+	//	time_manager.StartTimeMeasure();
+	//	auto correct = dictionary.MakeCorrect("thinkyoucanhbbng");
+	//	time_manager.EndTimeMeasure();
 
-	double time_sum = 0;
-	Time time_manager;
-	for (int it = 0; it < 100; it++) {
-		time_manager.StartTimeMeasure();
-		auto correct = dictionary.MakeCorrect("appl");
-		time_manager.EndTimeMeasure();
+	//	time_sum += time_manager.GetTimeMeasure();
 
-		time_sum += time_manager.GetTimeMeasure();
+	//	std::cout <<
+	//		"corrected: " << correct.first <<
+	//		"; distance: " << correct.second <<
+	//		"; time: " << time_manager.GetTimeMeasure() << "\n";
+	//}
+	//std::cout << "average time: " << time_sum / 100 << "s\n";
 
-		std::cout <<
-			"corrected: " << correct.first <<
-			"; distance: " << correct.second <<
-			"; time: " << time_manager.GetTimeMeasure() << "\n";
-	}
-	std::cout << "average time: " << time_sum / 100 << "s\n";
+	std::string word;
+	do {
+		std::cin >> word;
 
-	//std::string word;
-	//do {
-	//	std::cin >> word;
-
-	//	if (word == "_") break;
-	//	if (dictionary.WordExists(word))
-	//		std::cout << "word \"" << word << "\" is correct\n";
-	//	else
-	//		std::cout << "word \"" << word << "\" is incorrect, correct one should be: \"" << dictionary.MakeCorrect(word) << "\"\n";
-	//} while (true);
+		if (word == "_") break;
+		if (dictionary.WordExists(word))
+			std::cout << "word \"" << word << "\" is correct\n";
+		else
+			std::cout << "word \"" << word << "\" is incorrect, correct one should be: \"" << dictionary.MakeCorrect(word).first << "\"\n";
+	} while (true);
 
 	if (!SaveData(dictionary))
 		std::cout << "Failed to save data\n";

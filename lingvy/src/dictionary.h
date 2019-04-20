@@ -17,6 +17,13 @@
 
 #define MAX_LDISTANCE_WORD_LENGTH 100 // Memory consumed by LDistance will be MAX_LDISTANCE_WORD_LENGTH^2 * 4 bytes
 
+//#define THREAD_MODE
+
+#ifdef THREAD_MODE
+#define CONSUMER_THREAD_COUNT 2
+#define PRODUCER_THERAD_COUNT 2
+#endif // THREAD_MODE
+
 class Branch {
 public:
 	Branch() : m_letter(0), m_branches(), m_word_finisher(false) {}
@@ -202,12 +209,12 @@ public:
 		}
 
 		void Run(int thread_count_) {
-			unsigned int region_size = m_caller->InitialBranchCount() / thread_count_ + 1;
+			unsigned int region_size = m_caller->InitialBranchCount() / thread_count_;
 			unsigned int low = 0;
 			unsigned int high = region_size;
 
 			for (int i = 0; i < thread_count_; i++) {
-				m_threads.push_back(new std::thread(&LDProducer::Tick, this, std::make_pair(low, high)));
+				m_threads.push_back(new std::thread(&LDProducer::Tick, this, std::make_pair(low, (i == thread_count_-1)?INT_MAX:high)));
 				low = high;
 				high += region_size;
 			}

@@ -90,17 +90,36 @@ bool Dictionary::LoadFromFile(const std::string& file_name_) {
 }
 
 std::pair<std::string, int> Dictionary::MakeCorrect(const std::string& word_) {
+#ifdef THREAD_MODE
 	LDBuffer buffer;
 	LDProducer* prod = new LDProducer(buffer, this);
 	LDConsumer* cons = new LDConsumer(buffer, this, word_);
 
-	prod->Run(2);
-	cons->Run(2);
-	
+	prod->Run(PRODUCER_THERAD_COUNT);
+	cons->Run(CONSUMER_THREAD_COUNT);
+
 	delete prod;
 	delete cons;
 
 	return buffer.PopResult();
+#else
+	std::string temp_word;
+	std::string res_word;
+
+	auto iterator = GetIteratorCopy();
+	int min_distance = INT_MAX;
+
+	iterator.GetFirst(temp_word);
+	do {
+		int temp_distance = LDistance(temp_word, word_);
+		if (temp_distance < min_distance) {
+			res_word = temp_word;
+			min_distance = temp_distance;
+		}
+	} while (iterator.GetNext(temp_word) && min_distance != 1);
+
+	return std::make_pair(res_word, min_distance);
+#endif // THREAD_MODE
 }
 
 int Dictionary::LDistance(const std::string& word_1_, const std::string& word_2_) {
