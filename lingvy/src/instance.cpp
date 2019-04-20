@@ -14,8 +14,6 @@ int Instance::Run() {
 
 	Time time_manager;
 	while (true) {
-		std::cout << "Searching word appl. ";
-
 		time_manager.StartTimeMeasure();
 		auto correct = dictionary.MakeCorrect("appl");
 		time_manager.EndTimeMeasure();

@@ -11,6 +11,7 @@
 #include <thread>
 #include <mutex>
 #include <vector>
+#include <atomic>
 #include "ordered_listy.h"
 #include "listy.h"
 
@@ -80,24 +81,31 @@ public:
 	
 	class Buffer {
 	public:
-		Buffer() {}
+		Buffer() {
+			m_best_result = std::make_pair("", INT_MAX);
+		}
 
 		void Push(const std::string& word_) {
 			std::unique_lock<std::mutex> locker(mu);
-			while (m_data.size() >= m_max_size) cond.wait(locker);
+			cond.wait(locker, [this] {
+				return !(m_data.size() >= m_max_size);
+			});
 
 			m_data.push_back(word_);
 
 			locker.unlock();
-			cond.notify_all();
+			cond.notify_one();
 		}
 
 		bool Pop(std::string& word_) {
 			std::unique_lock<std::mutex> locker(mu);
-			while (m_data.empty() && !m_end_of_data) cond.wait(locker);
-			if (m_end_of_data) {
+			cond.wait(locker, [this] {
+				return !m_data.empty() || (m_done && m_data.empty());
+			});
+
+			if (m_done && m_data.empty()) {
 				locker.unlock();
-				cond.notify_all();
+				cond.notify_one();
 				return false;
 			}
 
@@ -105,41 +113,50 @@ public:
 			m_data.pop_front();
 
 			locker.unlock();
-			cond.notify_all();
+			cond.notify_one();
 			return true;
 		}
 
 		void PushResult(const std::pair<std::string, int>& result_) {
-			std::lock_guard<std::mutex> locker(mu);
+			std::lock_guard<std::mutex> locker(res_mu);
 
-			if (result_.second <= m_best_distance) {
-				m_best_distance = result_.second;
-				m_best_word = result_.first;
+			// No need to search further if we found word with distance of 1
+			if (result_.second <= 1) {
+				m_best_result = result_;
+				m_should_finish = true;
+				cond.notify_all();
+				return;
 			}
+
+			if (result_.second <= m_best_result.second)
+				m_best_result = result_;
 		}
 
 		std::pair<std::string, int> PopResult() {
-			return std::make_pair(m_best_word, m_best_distance);
+			std::lock_guard<std::mutex> locker(res_mu);
+
+			return m_best_result;
 		}
 
-		void EndOfData() {
-			m_end_of_data = true;
+		void SetDone() {
+			m_done = true;
+			cond.notify_all();
 		}
 
 		bool ShouldFinish() {
-			return m_end_of_data && m_data.empty();
+			return m_should_finish;
 		}
 
 	private:
 		std::deque<std::string> m_data;
-		int m_max_size = 10;
+		const int m_max_size = 10;
 
-		std::string m_best_word;
-		int m_best_distance = INT_MAX;
+		std::pair<std::string, int> m_best_result;
 
-		bool m_end_of_data = false;
-
+		bool m_done = false;
+		bool m_should_finish = false;
 		std::mutex mu;
+		std::mutex res_mu;
 		std::condition_variable cond;
 	};
 
@@ -147,8 +164,7 @@ public:
 	public:
 		Producer(Buffer& buffer_, Dictionary* caller_) : m_buffer(buffer_), m_caller(caller_) {}
 		~Producer() {
-			int thread_count = m_threads.size();
-			for (int i = 0; i < thread_count; i++) {
+			for (int i = 0; i < m_threads.size(); i++) {
 				m_threads[i]->join();
 				delete m_threads[i];
 			}
@@ -161,14 +177,15 @@ public:
 
 		void Tick() {
 			std::string word;
-			m_caller->GetFirstWord(word);
+			bool status = m_caller->GetFirstWord(word);
 			while (true) {
-				m_buffer.Push(word);
-
-				if (!m_caller->GetNextWord(word)) {
-					m_buffer.EndOfData();
+				if (status == false) {
+					m_buffer.SetDone();
 					break;
 				}
+
+				m_buffer.Push(word);
+				status = m_caller->GetNextWord(word);
 			}
 		}
 
@@ -185,8 +202,7 @@ public:
 			m_buffer(buffer_), m_caller(caller_), m_dest_word(dest_word_) {}
 
 		~Consumer() {
-			int thread_count = m_threads.size();
-			for (int i = 0; i < thread_count; i++) {
+			for (int i = 0; i < m_threads.size(); i++) {
 				m_threads[i]->join();
 				delete m_threads[i];
 			}
@@ -198,8 +214,8 @@ public:
 		}
 
 		void Tick() {
+			std::string word;
 			while (true) {
-				std::string word;
 				if(!m_buffer.Pop(word))
 					return;
 
