@@ -18,6 +18,23 @@ void Dictionary::AddWord(const std::string& word_) {
 	m_word_count++;
 }
 
+void Dictionary::RemoveWord(const std::string& word_) {
+	if (word_.empty()) return;
+
+	std::string word = WordToLower(word_);
+	Branch initial_branch(word[0]);
+	auto root = m_initial_branches.find_first(initial_branch); // Find initial letter of the word in dictionary
+
+	if (root == m_initial_branches.end()) return;
+
+	for (int i = 1; i < word.size(); i++) {	// Search for word letter by letter further into the tree
+		root = (*root).FindNext(word[i]);
+		if (root == ordered_list<Branch>::l_iterator(nullptr)) return;
+	}
+
+	(*root).word_finisher() = false;
+}
+
 bool Dictionary::WordExists(const std::string& word_) {
 	if (word_.empty()) return false;
 
