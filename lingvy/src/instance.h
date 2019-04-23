@@ -10,14 +10,10 @@
 
 class Instance {
 public:
-	Instance() {}
-
 	Instance(const std::string& exe_file_location_) {
 		m_exe_file_location = exe_file_location_;
 		m_program_directory = m_exe_file_location.substr(0, m_exe_file_location.find_last_of("\\"));
 	}
-
-	~Instance() {}
 
 	void SetInputFile(const std::string& input_file_name_) { // path to the dictionary text
 		m_input_file_name = input_file_name_;

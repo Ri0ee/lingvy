@@ -89,7 +89,7 @@ public:
 		Iterator(ordered_list<Branch>& initial_branches_, std::pair<int, int> range_ = std::make_pair(0, INT_MAX)) :
 			m_initial_branches(initial_branches_), m_range(range_), m_current_initial_branch(m_range.first) {}
 
-		Iterator(const Iterator& copy_iter_) : m_initial_branches(copy_iter_.m_initial_branches) {}
+		Iterator(const Iterator& iterator_) : m_initial_branches(iterator_.m_initial_branches) {}
 
 		bool GetFirst(std::string& word_);
 		bool GetNext(std::string& word_);
